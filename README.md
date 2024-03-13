@@ -1,5 +1,4 @@
 # ATLANTIS-SERVER
-# TOASTER-SERVER
 ![Frame 31](https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/fcab55b8-272f-4a06-86a9-6163561e612f)
 
 더 이상 **링크**를 태우지 마세요. **토스트 먹듯이 간단하게!**
