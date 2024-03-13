@@ -31,8 +31,7 @@
 
 
 ## 📦 ERD
-<img width="780" alt="스크린샷 2024-01-19 오후 10 31 57" src="https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/8e53739a-1f73-48c6-ba34-f492aa27c610)
-e3f/Untitled.png">
+<img width="709" alt="스크린샷 2024-03-13 오후 9 11 43" src="https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/deb200f2-7d6b-4997-8c7f-8808c2e18a3c">
 
 <br><br>
 
