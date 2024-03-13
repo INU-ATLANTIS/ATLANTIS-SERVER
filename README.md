@@ -36,7 +36,7 @@
 <br><br>
 
 ## 🧬 Architecture
-<img width="730" alt="스크린샷 2024-01-19 오후 10 11 03" src="https://github.com/Link-MIND/TOASTER-Server/assets/92644651/d05b1336-434b-422d-8902-a90a8c3b3ea2">
+<img width="722" alt="스크린샷 2024-03-13 오후 9 13 39" src="https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/fe685959-e656-4597-a376-de518f6e4aaa">
 
 <br><br>
 
