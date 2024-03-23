@@ -25,7 +25,7 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // IDENTITY 전략 사용
     @Column(name = "userId")
-    private Long userId;
+    private int userId;
     @Column(name = "email") // 데이터베이스의 실제 컬럼명 지정
     private String email;
     private String password;

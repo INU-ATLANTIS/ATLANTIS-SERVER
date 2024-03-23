@@ -47,7 +47,6 @@ public class UserServiceImplement implements UserService {
         UserEntity userEntity = null;
 
         try{
-
            userEntity = userRepository.findByEmail(email);
            if(userEntity == null) return GetUserResponseDto.noExistUser();
 

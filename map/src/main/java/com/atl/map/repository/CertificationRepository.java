@@ -8,7 +8,7 @@ import com.atl.map.entity.CertificationEntity;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface CertificationRepository extends JpaRepository<CertificationEntity, Long> {
+public interface CertificationRepository extends JpaRepository<CertificationEntity, String> {
 
     CertificationEntity findByEmail(String email);
 
