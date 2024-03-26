@@ -3,6 +3,7 @@ package com.atl.map.entity;
 import java.time.LocalDateTime;
 
 import com.atl.map.dto.request.post.CreatePostRequestDto;
+import com.atl.map.dto.request.post.PatchPostRequestDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,4 +44,28 @@ public class PostEntity {
         this.userId = Id;
         this.buildingId = (dto.getBuildingId() != 0) ? dto.getBuildingId() : null; // 조건부로 null 할당
     }
+
+    public void increaseLikeCount(){
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount(){
+        this.likeCount--;
+    }
+
+    public void increaseCommentCount(){
+        this.commentCount++;
+    }
+
+    public void decreaseCommentCount(){
+        this.commentCount--;
+    }
+
+    public void patchPost(PatchPostRequestDto dto){
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.updateDate = LocalDateTime.now();
+    }
+
+    
 }

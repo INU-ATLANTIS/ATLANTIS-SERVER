@@ -24,7 +24,6 @@ public class GetBuildingResponseDto extends ResponseDto {
     private String departments;
 
     private GetBuildingResponseDto(BuildingEntity buildingEntity){
-        super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
         this.buildingId = buildingEntity.getBuildingId();
         this.name = buildingEntity.getName();
         this.x = buildingEntity.getX();
