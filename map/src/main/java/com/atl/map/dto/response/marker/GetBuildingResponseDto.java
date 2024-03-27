@@ -21,7 +21,7 @@ public class GetBuildingResponseDto extends ResponseDto {
     private String phone;
     private String url;
     private String departments;
-    private String code;
+    private String buildingCode;
 
     private GetBuildingResponseDto(BuildingEntity buildingEntity){
         this.buildingId = buildingEntity.getBuildingId();
@@ -32,7 +32,7 @@ public class GetBuildingResponseDto extends ResponseDto {
         this.phone = buildingEntity.getPhone();
         this.url = buildingEntity.getUrl();
         this.departments = buildingEntity.getDepartments();
-        this.code = buildingEntity.getCode();
+        this.buildingCode = buildingEntity.getBuildingCode();
     }
 
     public static ResponseEntity<GetBuildingResponseDto> success(BuildingEntity buildingEntity){

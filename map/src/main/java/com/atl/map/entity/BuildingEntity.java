@@ -1,5 +1,6 @@
 package com.atl.map.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -47,7 +48,8 @@ public class BuildingEntity {
     @NotNull
     private String departments;
 
-    private String code;
+    @Column(name="code")
+    private String buildingCode;
 
     public BuildingEntity(BuildingEntity buildingEntity){
         this.buildingId = buildingEntity.getBuildingId();
@@ -58,7 +60,7 @@ public class BuildingEntity {
         this.phone = buildingEntity.getPhone();
         this.url = buildingEntity.getUrl();
         this.departments = buildingEntity.getDepartments();
-        this.code = buildingEntity.getCode(); 
+        this.buildingCode = buildingEntity.getBuildingCode(); 
     }
 
     public static List<BuildingEntity> copyList(List<BuildingEntity> resultSets) {
