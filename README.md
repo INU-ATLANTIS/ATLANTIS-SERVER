@@ -56,7 +56,7 @@
 
 ## 📦 ERD
 <img width="709" alt="스크린샷 2024-03-13 오후 9 11 43" src="https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/deb200f2-7d6b-4997-8c7f-8808c2e18a3c">
-![image](https://github.com/INU-ATLANTIS/ATLANTIS-SERVER/assets/137266460/103edf67-23d1-4cb7-96fc-6f8b6e771242)
+<img width="709" alt="스크린샷 2024-03-13 오후 9 11 43" src="https://github.com/INU-ATLANTIS/ATLANTIS-SERVER/assets/137266460/103edf67-23d1-4cb7-96fc-6f8b6e771242">
 
 
 <br><br>
