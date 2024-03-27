@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Getter
 @Setter
@@ -43,4 +46,28 @@ public class BuildingEntity {
 
     @NotNull
     private String departments;
+
+    private String code;
+
+    public BuildingEntity(BuildingEntity buildingEntity){
+        this.buildingId = buildingEntity.getBuildingId();
+        this.name = buildingEntity.getName();
+        this.x = buildingEntity.getX();
+        this.y = buildingEntity.getY();
+        this.office = buildingEntity.getOffice();
+        this.phone = buildingEntity.getPhone();
+        this.url = buildingEntity.getUrl();
+        this.departments = buildingEntity.getDepartments();
+        this.code = buildingEntity.getCode(); 
+    }
+
+    public static List<BuildingEntity> copyList(List<BuildingEntity> resultSets) {
+        List<BuildingEntity> list = new ArrayList<>();
+        for(BuildingEntity resultSet : resultSets){
+            BuildingEntity buildingEntity = new BuildingEntity(resultSet);
+            list.add(buildingEntity);
+        }
+        return list;
+    }
+    
 }

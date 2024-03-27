@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.atl.map.dto.response.marker.GetBuildingResponseDto;
+import com.atl.map.dto.response.marker.*;
 import com.atl.map.service.MarkerService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,10 +20,17 @@ public class MarkerController {
 
         
     @GetMapping("/building/{buildingId}")
-    public ResponseEntity<? super GetBuildingResponseDto> getUser(
+    public ResponseEntity<? super GetBuildingResponseDto> getBuilding(
         @PathVariable("buildingId") Integer buildingId
     ){
         ResponseEntity<? super GetBuildingResponseDto> response = markerService.getBuilding(buildingId);
+        return response;
+    }
+
+    @GetMapping("/building/building-list")
+    public ResponseEntity<? super GetBuildingListResponseDto> getBuildingList(
+    ){
+        ResponseEntity<? super GetBuildingListResponseDto> response = markerService.getBuildingList();
         return response;
     }
     

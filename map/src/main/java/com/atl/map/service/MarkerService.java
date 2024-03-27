@@ -7,4 +7,6 @@ import com.atl.map.dto.response.marker.*;
 public interface MarkerService {
     ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId);
 
+    ResponseEntity<? super GetBuildingListResponseDto> getBuildingList();
+
 }

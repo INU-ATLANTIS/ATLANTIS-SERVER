@@ -1,12 +1,11 @@
 package com.atl.map.dto.response.marker;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.atl.map.common.ResponseCode;
-import com.atl.map.common.ResponseMessage;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.entity.BuildingEntity;
 import lombok.Getter;
@@ -22,6 +21,7 @@ public class GetBuildingResponseDto extends ResponseDto {
     private String phone;
     private String url;
     private String departments;
+    private String code;
 
     private GetBuildingResponseDto(BuildingEntity buildingEntity){
         this.buildingId = buildingEntity.getBuildingId();
@@ -32,12 +32,12 @@ public class GetBuildingResponseDto extends ResponseDto {
         this.phone = buildingEntity.getPhone();
         this.url = buildingEntity.getUrl();
         this.departments = buildingEntity.getDepartments();
+        this.code = buildingEntity.getCode();
     }
 
     public static ResponseEntity<GetBuildingResponseDto> success(BuildingEntity buildingEntity){
         GetBuildingResponseDto responseBody = new GetBuildingResponseDto(buildingEntity);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
-
 
 }

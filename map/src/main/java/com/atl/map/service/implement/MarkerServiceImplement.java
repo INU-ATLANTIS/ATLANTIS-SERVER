@@ -1,9 +1,13 @@
 package com.atl.map.service.implement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.atl.map.dto.response.ResponseDto;
+import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.user.GetUserResponseDto;
 import com.atl.map.entity.BuildingEntity;
@@ -33,6 +37,22 @@ public class MarkerServiceImplement implements MarkerService{
         }
 
         return GetBuildingResponseDto.success(buildingEntity);
+    }
+    @Override
+    public ResponseEntity<? super GetBuildingListResponseDto> getBuildingList() {
+        
+        List<BuildingEntity> buildingEntities = new ArrayList<>();
+
+        try{
+
+            buildingEntities = buildingRepository.getBuildingList();
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetBuildingListResponseDto.success(buildingEntities);
     }
     
 }
