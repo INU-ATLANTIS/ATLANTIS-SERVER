@@ -1,4 +1,4 @@
-package com.atl.map.dto.response.post;
+package com.atl.map.dto.response.auth;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,16 +10,14 @@ import com.atl.map.dto.response.ResponseDto;
 import lombok.Getter;
 
 @Getter
-public class CreatePostResponseDto extends ResponseDto{
-    private Integer postId;
+public class DeleteAccountResponseDto extends ResponseDto{
     
-    private CreatePostResponseDto(Integer postId){
-        super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
-        this.postId = postId;
+    public DeleteAccountResponseDto(){
+        super();
     }
 
-    public static ResponseEntity<CreatePostResponseDto> success(Integer postId){
-        CreatePostResponseDto responseBody = new CreatePostResponseDto(postId);
+    public static ResponseEntity<DeleteAccountResponseDto> success(){
+            DeleteAccountResponseDto responseBody = new DeleteAccountResponseDto();
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 

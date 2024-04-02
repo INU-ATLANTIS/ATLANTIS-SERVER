@@ -2,7 +2,6 @@ package com.atl.map.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -27,4 +26,5 @@ public class PostListViewEntity {
     private String writerNickname;
     private String writerProfileImage;
     private String postTitleImage; 
+    private int buildingId;
 }

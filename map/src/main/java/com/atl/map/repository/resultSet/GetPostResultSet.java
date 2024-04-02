@@ -8,4 +8,5 @@ public interface GetPostResultSet {
     Integer getWriterUserId();
     String getWriterNickname();
     String getWriterProfileImage();
+    Integer getBuildingId();
 }

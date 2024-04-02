@@ -18,7 +18,7 @@ public class GetBuildingListResponseDto extends ResponseDto{
     
     List<BuildingEntity> buildingList = new ArrayList<>();
 
-     private GetBuildingListResponseDto(List<BuildingEntity> resultSets){
+    private GetBuildingListResponseDto(List<BuildingEntity> resultSets){
         super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
         this.buildingList = BuildingEntity.copyList(resultSets);
     }

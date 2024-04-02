@@ -59,4 +59,10 @@ public class UserEntity {
         LocalDateTime now = LocalDateTime.now();
         this.updateDate = now; 
     }
+
+    public void deletedUser() {
+        this.email="DeletedUser";
+        LocalDateTime now = LocalDateTime.now();
+        this.updateDate = now; 
+    }
 }

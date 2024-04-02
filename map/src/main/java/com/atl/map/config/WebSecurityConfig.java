@@ -42,10 +42,9 @@ public class WebSecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션을 STATELESS로 설정하여 세션을 사용하지 않게 합니다.
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/", "/api/v1/auth/**", "/api/v1/user/{email}", 
-                        "/file/**", "/api/v1/post/**", "/api/v1/marker/building/{buildingId}").permitAll() // 특정 경로는 인증 없이 접근을 허용합니다.
+                        .requestMatchers("/", "/api/v1/**").permitAll() // 특정 경로는 인증 없이 접근을 허용합니다.
                         .requestMatchers("/api/v1/user/**").hasAuthority("ROLE_USER") // USER 역할을 가진 사용자만 접근 가능한 경로를 설정합니다.
-                        .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN") // ADMIN 역할을 가진 사용자만 접근 가능한 경로를 설정합니다.
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN") // ADMIN 역할을 가진 사용자만 접근 가능한 경로를 설정합니다.
                         .anyRequest().authenticated()) // 그 외의 모든 요청은 인증을 요구합니다.
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(new FailedAuthenticationEntryPoint())) // 인증 실패 시 처리할 엔트리 포인트를 설정합니다.

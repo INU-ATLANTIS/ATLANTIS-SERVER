@@ -13,6 +13,7 @@ import com.atl.map.dto.request.auth.SignInRequestDto;
 import com.atl.map.dto.request.auth.SignUpRequestDto;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.auth.CheckCertificationResponseDto;
+import com.atl.map.dto.response.auth.DeleteAccountResponseDto;
 import com.atl.map.dto.response.auth.EmailCertificationResponseDto;
 import com.atl.map.dto.response.auth.EmailCheckResponseDto;
 import com.atl.map.dto.response.auth.SignInResponseDto;
@@ -22,9 +23,12 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.provider.EmailProvider;
 import com.atl.map.provider.JwtProvider;
 import com.atl.map.repository.CertificationRepository;
+import com.atl.map.repository.CommentRepository;
+import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.service.AuthService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,6 +40,8 @@ public class AuthServiceImplement implements AuthService {
     private final CertificationRepository certificationRepository;
     private final EmailProvider emailProvider;
     private final JwtProvider jwtProvider;
+    private final MarkerRepository markerRepository;
+    private final CommentRepository commentRepository;
 
     //의존성 주입 아님
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -167,6 +173,28 @@ public class AuthServiceImplement implements AuthService {
         }
 
         return SignInResponseDto.success(token);
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(String email) {
+        
+        UserEntity userEntity = userRepository.findByEmail(email);
+
+        try{
+            if (userEntity == null) {
+                return DeleteAccountResponseDto.notExistUser();
+            }
+            markerRepository.deleteByUserId(userEntity.getUserId());
+            commentRepository.deleteByUserId(userEntity.getUserId());
+            userEntity.deletedUser();
+            userRepository.save(userEntity);
+
+        }catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return DeleteAccountResponseDto.success();
     }
 
 }

@@ -3,8 +3,6 @@ package com.atl.map.dto.object;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.security.access.event.PublicInvocationEvent;
-
 import com.atl.map.entity.PostListViewEntity;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +23,7 @@ public class PostListItem {
     private String writeDatetime;
     private String writerNickname;
     private String writerProfileImage;
+    private int buildingId;
     
     public PostListItem(PostListViewEntity postListViewEntity){
         this.postId = postListViewEntity.getPostId();
@@ -36,6 +35,7 @@ public class PostListItem {
         this.writeDatetime = postListViewEntity.getWriteDatetime().toString();
         this.writerNickname = postListViewEntity.getWriterNickname();
         this.writerProfileImage = postListViewEntity.getWriterProfileImage();
+        this.buildingId = postListViewEntity.getBuildingId();
     }
 
     public static List<PostListItem> getList(List<PostListViewEntity> postListViewEntities){

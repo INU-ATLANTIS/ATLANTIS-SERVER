@@ -15,7 +15,7 @@ import com.atl.map.service.FileService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/api/v1/file")
 @RequiredArgsConstructor
 public class FileController {
     

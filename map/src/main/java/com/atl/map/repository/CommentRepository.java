@@ -28,4 +28,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
         nativeQuery = true
     )
     List<GetCommentListResultSet> getCommentList(Integer postId);
+
+    void deleteByUserId(int userId);
 }

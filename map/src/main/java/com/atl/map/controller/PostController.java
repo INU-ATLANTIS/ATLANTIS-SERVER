@@ -108,4 +108,12 @@ public class PostController {
         ResponseEntity<? super GetCommentListResponseDto> response = postService.getCommentList(postId);
         return response;
     }
+
+    @GetMapping("/building/{buildingid}")
+    public ResponseEntity<? super GetBuildingPostListResponseDto> GetbuildingPostList(
+        @PathVariable("buildingid") Integer buildingId
+    ){
+        ResponseEntity<? super GetBuildingPostListResponseDto> response = postService.getBuildingPostList(buildingId);
+        return response;
+    }
 }

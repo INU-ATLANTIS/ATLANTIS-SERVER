@@ -18,6 +18,7 @@ import com.atl.map.dto.request.post.PostCommentRequestDto;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.post.CreatePostResponseDto;
 import com.atl.map.dto.response.post.DeletePostResponseDto;
+import com.atl.map.dto.response.post.GetBuildingPostListResponseDto;
 import com.atl.map.dto.response.post.GetCommentListResponseDto;
 import com.atl.map.dto.response.post.GetLatestPostResponseDto;
 import com.atl.map.dto.response.post.GetPostResponseDto;
@@ -61,13 +62,14 @@ public class PostServiceImplement implements PostService {
     @Override
     public ResponseEntity<? super CreatePostResponseDto> createPost(CreatePostRequestDto dto, String email) {
         
+        PostEntity postEntity = null;
 
         try{
             boolean existedEmail = userRepository.existsByEmail(email);
             if(!existedEmail) return CreatePostResponseDto.notExistUser();
 
             UserEntity userEntity = userRepository.findByEmail(email);
-            PostEntity postEntity = new PostEntity(dto, userEntity.getUserId());
+            postEntity = new PostEntity(dto, userEntity.getUserId());
             postRepository.save(postEntity);
 
             int postId = postEntity.getPostId();
@@ -87,7 +89,7 @@ public class PostServiceImplement implements PostService {
             return ResponseDto.databaseError();
         }
 
-        return CreatePostResponseDto.success();
+        return CreatePostResponseDto.success(postEntity.getPostId());
 
     }
 
@@ -293,6 +295,20 @@ public class PostServiceImplement implements PostService {
         }
 
         return GetCommentListResponseDto.success(resultSets);
+    }
+
+    @Override
+    public ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId) {
+        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
+        try {
+            postListViewEntities = postListViewRepository.findByBuildingIdOrderByWriteDatetimeDesc(buildingId);
+    
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    
+        return GetBuildingPostListResponseDto.success(postListViewEntities);
     }
     
 }

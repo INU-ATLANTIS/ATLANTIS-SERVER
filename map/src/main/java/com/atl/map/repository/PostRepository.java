@@ -17,9 +17,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer>{
     @Query(value = "SELECT p.postId, p.title, p.content, " +
                    "IFNULL(p.updateDate, p.createDate) AS writeDatetime, " +
                    "p.userId AS writerUserId, u.nickname AS writerNickname, " +
-                   "u.profileImage AS writerProfileImage " +
+                   "u.profileImage AS writerProfileImage, " +
+                   "p.buildingId " +
                    "FROM post p INNER JOIN user u ON p.userId = u.userId " +
                    "WHERE p.postId = ?1", nativeQuery = true)
     GetPostResultSet getPost(Integer postId);
+    void deleteByUserId(Integer userId);
     
 }

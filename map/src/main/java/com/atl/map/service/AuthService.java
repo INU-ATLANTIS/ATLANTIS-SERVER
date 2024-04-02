@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import com.atl.map.dto.response.auth.EmailCheckResponseDto;
 import com.atl.map.dto.request.auth.CheckCertificationRequestDto;
 import com.atl.map.dto.response.auth.CheckCertificationResponseDto;
+import com.atl.map.dto.response.auth.DeleteAccountResponseDto;
 import com.atl.map.dto.request.auth.EmailCertificationRequestDto;
 import com.atl.map.dto.response.auth.EmailCertificationResponseDto;
 import com.atl.map.dto.request.auth.EmailCheckRequestDto;
@@ -20,4 +21,6 @@ public interface AuthService {
     ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto);
     ResponseEntity<? super SignUpResponseDto> signUp (SignUpRequestDto dto);
     ResponseEntity<? super SignInResponseDto> signIn (SignInRequestDto dto);
+    ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(String email);
+    
 }

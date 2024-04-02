@@ -1,6 +1,8 @@
 package com.atl.map.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +12,7 @@ import com.atl.map.dto.response.auth.EmailCertificationResponseDto;
 import com.atl.map.dto.response.auth.EmailCheckResponseDto;
 import com.atl.map.dto.request.auth.CheckCertificationRequestDto;
 import com.atl.map.dto.response.auth.CheckCertificationResponseDto;
+import com.atl.map.dto.response.auth.DeleteAccountResponseDto;
 import com.atl.map.dto.request.auth.EmailCertificationRequestDto;
 import com.atl.map.dto.request.auth.EmailCheckRequestDto;
 import com.atl.map.dto.request.auth.SignInRequestDto;
@@ -65,6 +68,13 @@ public class AuthController {
         @RequestBody @Valid SignInRequestDto requestBody)
     {
         ResponseEntity<? super SignInResponseDto> response = authService.signIn(requestBody);
+        return response;
+    }
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(
+        @AuthenticationPrincipal String email) {
+        ResponseEntity<? super DeleteAccountResponseDto> response = authService.deleteAccount(email);
         return response;
     }
     

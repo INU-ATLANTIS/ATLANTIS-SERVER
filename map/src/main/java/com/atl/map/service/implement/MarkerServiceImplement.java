@@ -3,16 +3,24 @@ package com.atl.map.service.implement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.atl.map.dto.request.marker.CreateMarkerRequestDto;
 import com.atl.map.dto.response.ResponseDto;
+import com.atl.map.dto.response.marker.CreateMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
-import com.atl.map.dto.response.user.GetUserResponseDto;
+import com.atl.map.dto.response.marker.GetMarkerResponseDto;
 import com.atl.map.entity.BuildingEntity;
+import com.atl.map.entity.MarkerEntity;
+import com.atl.map.entity.PostEntity;
 import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.BuildingRepository;
+import com.atl.map.repository.MarkerRepository;
+import com.atl.map.repository.PostRepository;
+import com.atl.map.repository.UserRepository;
 import com.atl.map.service.MarkerService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MarkerServiceImplement implements MarkerService{
 
+    private final UserRepository userRepository;
+    private final MarkerRepository markerRepository;
+    private final PostRepository postRepository;
     private final BuildingRepository buildingRepository;
+    
     @Override
     public ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId) {
         BuildingEntity buildingEntity = null;
@@ -54,5 +66,43 @@ public class MarkerServiceImplement implements MarkerService{
 
         return GetBuildingListResponseDto.success(buildingEntities);
     }
+    @Override
+    public ResponseEntity<? super CreateMarkerResponseDto> createMarker(String email,
+            CreateMarkerRequestDto dto) {
+              
+        try{
+
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return CreateMarkerResponseDto.notExistUser();
+            boolean existedPost = postRepository.existsById(dto.getPostId());
+            if(!existedPost) return CreateMarkerResponseDto.notExistPost();
+            MarkerEntity markerEntity = new MarkerEntity(dto, userEntity.getUserId());
+            markerRepository.save(markerEntity);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return CreateMarkerResponseDto.success();
+    }
     
+    @Override
+    public ResponseEntity<? super GetMarkerResponseDto> getMarker(Integer markerId) 
+    {
+        PostEntity postEntity = null;
+        try{
+            MarkerEntity markerEntity = markerRepository.findByMarkerId(markerId);
+            if (markerEntity == null) return GetMarkerResponseDto.notExistMarker();
+            postEntity = postRepository.findByPostId(markerEntity.getPostId());
+            if (postEntity == null) return GetMarkerResponseDto.notExistPost();
+     
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+   
+        return GetMarkerResponseDto.success(postEntity.getPostId());
+    }
+   
 }
