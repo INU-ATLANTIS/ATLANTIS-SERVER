@@ -2,7 +2,9 @@ package com.atl.map.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.atl.map.dto.request.marker.CreateMarkerRequestDto;
+import com.atl.map.dto.request.marker.PatchMarkerRequestDto;
 import com.atl.map.dto.response.marker.*;
 import com.atl.map.service.MarkerService;
 
@@ -52,6 +55,22 @@ public class MarkerController {
     @PathVariable("markerId") Integer markerId
     ){
         return markerService.getMarker(markerId);
+    }
+
+    @PatchMapping("/{markerId}")
+    public ResponseEntity<? super PatchMarekrResponseDto> updateMarker(
+        @PathVariable("markerId") Integer markerId,
+        @RequestBody @Valid PatchMarkerRequestDto requestBody,
+        @AuthenticationPrincipal String email
+    ){
+        return markerService.patchMarker(requestBody, email, markerId);
+    }
+
+    @DeleteMapping("/{markerId}")
+    public ResponseEntity<? super DeleteMarkerResponseDto> deleteMarker(
+            @PathVariable("markerId") Integer markerId,
+            @AuthenticationPrincipal String email) {
+        return markerService.deleteMarker(markerId, email);
     }
 
 }

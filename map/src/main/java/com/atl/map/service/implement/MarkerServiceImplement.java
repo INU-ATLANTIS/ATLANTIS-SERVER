@@ -8,11 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.atl.map.dto.request.marker.CreateMarkerRequestDto;
+import com.atl.map.dto.request.marker.PatchMarkerRequestDto;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.marker.CreateMarkerResponseDto;
+import com.atl.map.dto.response.marker.DeleteMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetMarkerResponseDto;
+import com.atl.map.dto.response.marker.PatchMarekrResponseDto;
 import com.atl.map.entity.BuildingEntity;
 import com.atl.map.entity.MarkerEntity;
 import com.atl.map.entity.PostEntity;
@@ -103,6 +106,49 @@ public class MarkerServiceImplement implements MarkerService{
         }
    
         return GetMarkerResponseDto.success(postEntity.getPostId());
+    }
+    @Override
+    public ResponseEntity<? super PatchMarekrResponseDto> patchMarker(PatchMarkerRequestDto dto, String email, Integer markerId) {
+    
+        try{
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return PatchMarekrResponseDto.notExistUser();
+            MarkerEntity markerEntity = markerRepository.findByMarkerId(markerId);
+            if(markerEntity == null) return PatchMarekrResponseDto.notExistMarker();
+            if (!markerEntity.getUserId().equals(userEntity.getUserId())) {
+                return DeleteMarkerResponseDto.noPermission();}
+            boolean existedPost = postRepository.existsById(dto.getPostId());
+            if(!existedPost) return PatchMarekrResponseDto.notExistPost();
+
+            markerEntity.patchMarker(dto);
+            markerRepository.save(markerEntity);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return PatchMarekrResponseDto.success();
+    }
+    @Override
+    public ResponseEntity<? super DeleteMarkerResponseDto> deleteMarker(Integer markerId, String email) {
+    
+        try{
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if (userEntity == null) {
+                return DeleteMarkerResponseDto.notExistUser();}
+            MarkerEntity markerEntity = markerRepository.findById(markerId).orElse(null);
+            if (markerEntity == null) {
+                return DeleteMarkerResponseDto.notExistMarker();}
+            if (!markerEntity.getUserId().equals(userEntity.getUserId())) {
+                return DeleteMarkerResponseDto.noPermission();}
+            markerRepository.delete(markerEntity);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return DeleteMarkerResponseDto.success();
     }
    
 }

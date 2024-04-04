@@ -3,6 +3,7 @@ package com.atl.map.entity;
 import java.math.BigDecimal;
 
 import com.atl.map.dto.request.marker.CreateMarkerRequestDto;
+import com.atl.map.dto.request.marker.PatchMarkerRequestDto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -42,6 +43,13 @@ public class MarkerEntity {
         this.postId = dto.getPostId();
         this.name = dto.getName();
         this.userId = userId;
+    }
+
+    public void patchMarker(PatchMarkerRequestDto dto){
+        this.x = dto.getX();
+        this.y = dto.getY();
+        this.postId = dto.getPostId();
+        this.name = dto.getName();
     }
 
 }

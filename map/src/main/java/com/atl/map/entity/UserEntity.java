@@ -61,7 +61,7 @@ public class UserEntity {
     }
 
     public void deletedUser() {
-        this.email="DeletedUser";
+        this.email="deleted_"+LocalDateTime.now()+"_"+this.email;
         LocalDateTime now = LocalDateTime.now();
         this.updateDate = now; 
     }
