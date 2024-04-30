@@ -36,3 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 
+# Exclude specific config file
+/src/main/resources/application.properties
