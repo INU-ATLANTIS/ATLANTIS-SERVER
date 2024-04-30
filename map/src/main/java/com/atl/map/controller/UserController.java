@@ -8,6 +8,8 @@ import com.atl.map.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +30,7 @@ import com.atl.map.dto.response.user.GetUserResponseDto;
 @RequiredArgsConstructor
 public class UserController {
     
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
     @GetMapping("")
@@ -51,6 +54,7 @@ public class UserController {
         @RequestBody @Valid PatchNicknameRequestDto requestBody,
         @AuthenticationPrincipal String email
     ){
+        logger.info("Attempting to nickname for user: {}", email);
         ResponseEntity<? super PatchNicknameResponseDto> response = userService.patchNickname(requestBody, email);
         return response;
     }
@@ -60,6 +64,8 @@ public class UserController {
         @RequestBody @Valid PatchProfileImageRequestDto requestBody,
         @AuthenticationPrincipal String email
     ){
+        logger.info("Attempting to update profile image for user: {}", email);
+        logger.debug("Profile image URL: {}", requestBody.getProfileImage());
         ResponseEntity<? super PatchProfileImageResponseDto> response = userService.patchProfileImage(requestBody, email);
         return response;
     }

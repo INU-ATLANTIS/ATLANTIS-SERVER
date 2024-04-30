@@ -3,6 +3,8 @@ package com.atl.map.dto.response.auth;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.atl.map.common.ResponseCode;
+import com.atl.map.common.ResponseMessage;
 import com.atl.map.dto.response.ResponseDto;
 
 import lombok.Getter;
@@ -20,7 +22,7 @@ public class CheckCertificationResponseDto extends ResponseDto {
     }
 
     public static ResponseEntity<ResponseDto> certificationFail (){
-        ResponseDto responseBody = new ResponseDto();
+        ResponseDto responseBody = new ResponseDto(ResponseCode.CERTIFICATION_FAIL, ResponseMessage.CERTIFICATION_FAIL);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
     }
 

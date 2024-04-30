@@ -33,7 +33,8 @@ public class FileController {
     public Resource getImage(
         @PathVariable("fileName") String fileName
     ){
-        Resource resource = fileService.getImag(fileName);
+        Resource resource = fileService.getImage(fileName);
         return resource;
     }
+
 }

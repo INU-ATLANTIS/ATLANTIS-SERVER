@@ -73,4 +73,11 @@ public class MarkerController {
         return markerService.deleteMarker(markerId, email);
     }
 
+    @GetMapping("/top")
+    public ResponseEntity<? super GetTopMarkerResponseDto> getMarkerList(
+    ){
+        ResponseEntity<? super GetTopMarkerResponseDto> response = markerService.getTopMarker();
+        return response;
+    }
+
 }

@@ -14,6 +14,7 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.service.UserService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -81,6 +82,7 @@ public class UserServiceImplement implements UserService {
         return PatchNicknameResponseDto.success();
     }
 
+    @Transactional
     @Override
     public ResponseEntity<? super PatchProfileImageResponseDto> patchProfileImage(PatchProfileImageRequestDto dto, String email) {
         

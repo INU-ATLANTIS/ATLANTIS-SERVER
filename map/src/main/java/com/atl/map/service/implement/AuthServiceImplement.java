@@ -31,9 +31,15 @@ import com.atl.map.service.AuthService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImplement implements AuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImplement.class);
+
 
     //외부에서 제어역전 통해서 의존성 주입
     private final UserRepository userRepository;
@@ -91,26 +97,30 @@ public class AuthServiceImplement implements AuthService {
 
     @Override
     public ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto) {
-        try{
-            
-            String email = dto.getEmail();
-            String certificationNumber = dto.getCertificationNumber();
-            
+        String email = dto.getEmail();
+        String certificationNumber = dto.getCertificationNumber();
+
+        logger.debug("Checking certification for email: {}", email);
+        try {
             CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
-            
-            //인증 메일을 보낸적 없을 때
-            if(certificationEntity == null) return CheckCertificationResponseDto.certificationFail();
 
-            boolean isMatched = certificationEntity.getEmail().equals(email)
-            && certificationEntity.getCertificationNumber().equals(certificationNumber);
+            // 인증 메일을 보낸 적 없을 때
+            if (certificationEntity == null) {
+                logger.warn("No certification entity found for email: {}", email);
+                return CheckCertificationResponseDto.certificationFail();
+            }
 
-            if(!isMatched) return CheckCertificationResponseDto.certificationFail();
-
-        }catch (Exception exception) {
-            exception.printStackTrace();
+            boolean isMatched = certificationEntity.getEmail().equals(email) && certificationEntity.getCertificationNumber().equals(certificationNumber);
+            if (!isMatched) {
+                logger.info("Certification number does not match for email: {}", email);
+                return CheckCertificationResponseDto.certificationFail();
+            }
+        } catch (Exception exception) {
+            logger.error("Database error during certification check for email: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
+        logger.info("Certification check successful for email: {}", email);
         return CheckCertificationResponseDto.success();
     }
 

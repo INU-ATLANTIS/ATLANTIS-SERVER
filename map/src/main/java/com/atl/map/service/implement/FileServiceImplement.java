@@ -27,8 +27,8 @@ public class FileServiceImplement implements FileService {
         String originalFileName = file.getOriginalFilename();
         String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         String uuid = UUID.randomUUID().toString();
-        String savaFileName = uuid + extension;
-        String savaPath = filePath + savaFileName;
+        String saveFileName = uuid + extension;
+        String savaPath = filePath + saveFileName;
 
         try{
             file.transferTo(new File(savaPath));
@@ -37,12 +37,12 @@ public class FileServiceImplement implements FileService {
             return null;
         }
 
-        String url = fileUrl + savaFileName;
+        String url = fileUrl + saveFileName;
         return url;
     }
 
     @Override
-    public Resource getImag(String filename) {
+    public Resource getImage(String filename) {
         
         Resource resource = null;
 

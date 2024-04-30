@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity 
+@Entity(name= "marker")
 @Table(name = "marker") 
 public class MarkerEntity {
 

@@ -1,11 +1,14 @@
 package com.atl.map.dto.response.marker;
 
+import java.math.BigDecimal;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.atl.map.common.ResponseCode;
 import com.atl.map.common.ResponseMessage;
 import com.atl.map.dto.response.ResponseDto;
+import com.atl.map.entity.MarkerEntity;
 
 import lombok.Getter;
 
@@ -13,14 +16,18 @@ import lombok.Getter;
 public class GetMarkerResponseDto extends ResponseDto{
 
     private final Integer postId;
+    private final BigDecimal x;
+    private final BigDecimal y;
     
-    private GetMarkerResponseDto(Integer postId){
+    private GetMarkerResponseDto(MarkerEntity markerEntity){
         super();
-        this.postId = postId;
+        this.postId = markerEntity.getPostId();
+        this.x = markerEntity.getX();
+        this.y = markerEntity.getY();
     }
 
-    public static ResponseEntity<GetMarkerResponseDto> success(Integer postId){
-        GetMarkerResponseDto result = new GetMarkerResponseDto(postId);
+    public static ResponseEntity<GetMarkerResponseDto> success(MarkerEntity markerEntity){
+        GetMarkerResponseDto result = new GetMarkerResponseDto(markerEntity);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

@@ -12,6 +12,7 @@ public interface ResponseMessage {
     String NOT_EXISTED_USER = "This user does not exist.";
     String NOT_EXISTED_POST = "This post does not exist.";
     String NOT_EXISTED_MARKER = "This marker does not exist";
+    String NOT_EXISTED_NOTIFICATION = "This Notification does not exist";
 
     // HTTP Status 401
     String SIGN_IN_FAIL = "Login information mismatch.";    

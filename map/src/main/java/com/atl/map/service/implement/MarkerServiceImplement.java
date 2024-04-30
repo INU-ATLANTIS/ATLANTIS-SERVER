@@ -1,5 +1,6 @@
 package com.atl.map.service.implement;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import com.atl.map.dto.response.marker.DeleteMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetMarkerResponseDto;
+import com.atl.map.dto.response.marker.GetTopMarkerResponseDto;
 import com.atl.map.dto.response.marker.PatchMarekrResponseDto;
 import com.atl.map.entity.BuildingEntity;
 import com.atl.map.entity.MarkerEntity;
@@ -93,11 +95,11 @@ public class MarkerServiceImplement implements MarkerService{
     @Override
     public ResponseEntity<? super GetMarkerResponseDto> getMarker(Integer markerId) 
     {
-        PostEntity postEntity = null;
+        MarkerEntity markerEntity = null;
         try{
-            MarkerEntity markerEntity = markerRepository.findByMarkerId(markerId);
+            markerEntity = markerRepository.findByMarkerId(markerId);
             if (markerEntity == null) return GetMarkerResponseDto.notExistMarker();
-            postEntity = postRepository.findByPostId(markerEntity.getPostId());
+            PostEntity postEntity = postRepository.findByPostId(markerEntity.getPostId());
             if (postEntity == null) return GetMarkerResponseDto.notExistPost();
      
         }catch(Exception exception){
@@ -105,7 +107,7 @@ public class MarkerServiceImplement implements MarkerService{
             return ResponseDto.databaseError();
         }
    
-        return GetMarkerResponseDto.success(postEntity.getPostId());
+        return GetMarkerResponseDto.success(markerEntity);
     }
     @Override
     public ResponseEntity<? super PatchMarekrResponseDto> patchMarker(PatchMarkerRequestDto dto, String email, Integer markerId) {
@@ -149,6 +151,19 @@ public class MarkerServiceImplement implements MarkerService{
             return ResponseDto.databaseError();
         }
         return DeleteMarkerResponseDto.success();
+    }
+    @Override
+    public ResponseEntity<? super GetTopMarkerResponseDto> getTopMarker() {
+    
+        List<MarkerEntity> list = new ArrayList<>();
+        try{
+            LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
+            list = markerRepository.findMarkersByLikesSinceDate(beforeWeek);
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return GetTopMarkerResponseDto.success(list);
     }
    
 }
