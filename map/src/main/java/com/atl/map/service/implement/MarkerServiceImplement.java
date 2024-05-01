@@ -17,6 +17,7 @@ import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetTopMarkerResponseDto;
+import com.atl.map.dto.response.marker.GetUserMarkerResponseDto;
 import com.atl.map.dto.response.marker.PatchMarekrResponseDto;
 import com.atl.map.entity.BuildingEntity;
 import com.atl.map.entity.MarkerEntity;
@@ -164,6 +165,20 @@ public class MarkerServiceImplement implements MarkerService{
             return ResponseDto.databaseError();
         }
         return GetTopMarkerResponseDto.success(list);
+    }
+    @Override
+    public ResponseEntity<? super GetUserMarkerResponseDto> getUserMarker(String email) {
+        
+        List<MarkerEntity> list = new ArrayList<>();
+        try{
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return GetUserMarkerResponseDto.notExistUser();
+            list = markerRepository.findByUserId(userEntity.getUserId());
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return GetUserMarkerResponseDto.success(list);
     }
    
 }

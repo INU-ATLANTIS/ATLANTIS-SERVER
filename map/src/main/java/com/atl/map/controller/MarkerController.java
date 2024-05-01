@@ -80,4 +80,12 @@ public class MarkerController {
         return response;
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<? super GetUserMarkerResponseDto> createPost(
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super GetUserMarkerResponseDto> response = markerService.getUserMarker(email);
+        return response;
+    }
+
 }

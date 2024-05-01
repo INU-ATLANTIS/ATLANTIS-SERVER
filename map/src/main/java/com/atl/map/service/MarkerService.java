@@ -20,4 +20,6 @@ public interface MarkerService {
     ResponseEntity<? super DeleteMarkerResponseDto> deleteMarker(Integer markerId, String email);
 
     ResponseEntity<? super GetTopMarkerResponseDto> getTopMarker();
+
+    ResponseEntity<? super GetUserMarkerResponseDto> getUserMarker(String email);
 }
