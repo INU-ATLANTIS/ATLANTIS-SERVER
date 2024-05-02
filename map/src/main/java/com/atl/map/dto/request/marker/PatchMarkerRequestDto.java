@@ -15,4 +15,5 @@ public class PatchMarkerRequestDto {
     private BigDecimal x;
     private BigDecimal y;
     private int postId;
+    private String type;
 }

@@ -15,5 +15,6 @@ public interface BuildingRepository extends JpaRepository<BuildingEntity, Intege
 
     @Query(value="SELECT * FROM building", nativeQuery = true)
     List<BuildingEntity> getBuildingList();
+    BuildingEntity findByBuildingCodeContains(String code);
     
 }

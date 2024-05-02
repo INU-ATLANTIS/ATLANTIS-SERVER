@@ -88,4 +88,12 @@ public class MarkerController {
         return response;
     }
 
+    @GetMapping("/search-building/{searchword}")
+    public ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuilding(
+        @PathVariable("searchword") String searchWord
+    ){
+        ResponseEntity<? super GetSearchBuildingResponseDto> response = markerService.getSearchBuildingId(searchWord);
+        return response;
+    }
+
 }

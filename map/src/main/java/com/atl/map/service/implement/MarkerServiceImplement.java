@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +15,7 @@ import com.atl.map.dto.response.marker.DeleteMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetMarkerResponseDto;
+import com.atl.map.dto.response.marker.GetSearchBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetTopMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetUserMarkerResponseDto;
 import com.atl.map.dto.response.marker.PatchMarekrResponseDto;
@@ -179,6 +179,20 @@ public class MarkerServiceImplement implements MarkerService{
             return ResponseDto.databaseError();
         }
         return GetUserMarkerResponseDto.success(list);
+    }
+    @Override
+    public ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuildingId(String word) {
+        
+        BuildingEntity buildingEntity;
+        try{
+            buildingEntity = buildingRepository.findByBuildingCodeContains(word);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        
+        return GetSearchBuildingResponseDto.success(buildingEntity.getBuildingId());
     }
    
 }

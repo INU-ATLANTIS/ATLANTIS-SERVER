@@ -22,4 +22,6 @@ public interface MarkerService {
     ResponseEntity<? super GetTopMarkerResponseDto> getTopMarker();
 
     ResponseEntity<? super GetUserMarkerResponseDto> getUserMarker(String email);
+
+    ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuildingId(String word);
 }

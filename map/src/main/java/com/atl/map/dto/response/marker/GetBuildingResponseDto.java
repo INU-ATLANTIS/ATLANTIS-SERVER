@@ -1,7 +1,6 @@
 package com.atl.map.dto.response.marker;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

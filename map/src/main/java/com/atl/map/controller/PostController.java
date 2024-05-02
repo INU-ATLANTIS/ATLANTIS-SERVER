@@ -93,7 +93,7 @@ public class PostController {
     }
 
     @GetMapping("/search-list/{searchword}")
-    public ResponseEntity<? super GetSearchPostListResponseDto> postComment(
+    public ResponseEntity<? super GetSearchPostListResponseDto> getSearchPost(
         @PathVariable("searchword") String searchWord
     ){
         ResponseEntity<? super GetSearchPostListResponseDto> response = postService.getSearchPostList(searchWord);
@@ -102,7 +102,7 @@ public class PostController {
 
 
     @GetMapping("/{postid}/comment-list")
-    public ResponseEntity<? super GetCommentListResponseDto> postComment(
+    public ResponseEntity<? super GetCommentListResponseDto> getCommentList(
         @PathVariable("postid") Integer postId
     ){
         ResponseEntity<? super GetCommentListResponseDto> response = postService.getCommentList(postId);

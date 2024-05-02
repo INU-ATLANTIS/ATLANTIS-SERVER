@@ -37,6 +37,8 @@ public class MarkerEntity {
 
     private Integer postId;
 
+    private String type;
+
     public MarkerEntity(CreateMarkerRequestDto dto, int userId){
         this.x = dto.getX();
         this.y = dto.getY();

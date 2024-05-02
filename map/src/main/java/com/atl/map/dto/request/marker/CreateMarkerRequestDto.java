@@ -2,7 +2,6 @@ package com.atl.map.dto.request.marker;
 
 import java.math.BigDecimal;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,5 +20,6 @@ public class CreateMarkerRequestDto {
     private BigDecimal y;
     @NotNull
     private Integer postId;
+    private String type;
 
 }
