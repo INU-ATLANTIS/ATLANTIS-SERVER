@@ -23,7 +23,7 @@ public class PostListItem {
     private String writeDatetime;
     private String writerNickname;
     private String writerProfileImage;
-    private int buildingId;
+    private Integer buildingId;
     
     public PostListItem(PostListViewEntity postListViewEntity){
         this.postId = postListViewEntity.getPostId();

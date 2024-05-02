@@ -26,5 +26,5 @@ public class PostListViewEntity {
     private String writerNickname;
     private String writerProfileImage;
     private String postTitleImage; 
-    private int buildingId;
+    private Integer buildingId;
 }
