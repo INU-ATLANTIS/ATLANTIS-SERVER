@@ -10,17 +10,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.atl.map.dto.request.post.CreatePostRequestDto;
 import com.atl.map.dto.request.post.PatchPostRequestDto;
+import com.atl.map.dto.request.post.PostChildCommentRequestDto;
 import com.atl.map.dto.request.post.PostCommentRequestDto;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.post.CreatePostResponseDto;
 import com.atl.map.dto.response.post.DeletePostResponseDto;
 import com.atl.map.dto.response.post.GetBuildingPostListResponseDto;
+import com.atl.map.dto.response.post.GetChildCommentListResponseDto;
 import com.atl.map.dto.response.post.GetCommentListResponseDto;
 import com.atl.map.dto.response.post.GetLatestPostResponseDto;
 import com.atl.map.dto.response.post.GetPostResponseDto;
 import com.atl.map.dto.response.post.GetSearchPostListResponseDto;
 import com.atl.map.dto.response.post.GetTopPostListResponseDto;
 import com.atl.map.dto.response.post.PatchPostResponseDto;
+import com.atl.map.dto.response.post.PostChildCommentResponseDto;
 import com.atl.map.dto.response.post.PostCommentResponseDto;
 import com.atl.map.dto.response.post.PutFavoriteResponseDto;
 import com.atl.map.entity.CommentEntity;
@@ -305,6 +308,50 @@ public class PostServiceImplement implements PostService {
         }
     
         return GetBuildingPostListResponseDto.success(postListViewEntities);
+    }
+
+    @Override
+    public ResponseEntity<? super GetChildCommentListResponseDto> getChildCommentList(Integer parentId) {
+        
+        List<GetCommentListResultSet> resultSets = new ArrayList<>();
+        try{
+
+            boolean existedComment = commentRepository.existsById(parentId);
+            if(!existedComment) return GetChildCommentListResponseDto.notExistComment();
+
+            resultSets = commentRepository.getChildCommentList(parentId);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetChildCommentListResponseDto.success(resultSets);
+    }
+
+    @Override
+    public ResponseEntity<? super PostChildCommentResponseDto> postChildComment(PostChildCommentRequestDto dto, String email, Integer postId, Integer commentId) {
+        
+        try{
+
+            PostEntity postEntity = postRepository.findByPostId(postId);
+            if(postEntity == null) return PostChildCommentResponseDto.notExistPost();
+
+            boolean existedEmail = userRepository.existsByEmail(email);
+            if(!existedEmail) return PostChildCommentResponseDto.notExistUser();
+
+            CommentEntity commentEntity = new CommentEntity(dto, postId, commentId, userRepository.findByEmail(email).getUserId());
+            commentRepository.save(commentEntity);
+            postEntity.increaseCommentCount();
+            postRepository.save(postEntity);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return PostChildCommentResponseDto.success();
+
     }
     
 }

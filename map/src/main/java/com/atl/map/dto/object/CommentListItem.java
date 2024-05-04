@@ -18,12 +18,16 @@ public class CommentListItem {
     private String profileImage;
     private LocalDateTime writeDatetime;
     private String content;
+    private Integer parentId;
+    private Integer commentId;
 
     public CommentListItem(GetCommentListResultSet resultSet){
         this.nickname = resultSet.getNickname();
         this.profileImage = resultSet.getProfileImage();
         this.writeDatetime = resultSet.getWriteDatetime();
         this.content = resultSet.getContent();
+        this.parentId = resultSet.getParentId();
+        this.commentId = resultSet.getCommentId();
     }
 
     public static List<CommentListItem> copyList(List<GetCommentListResultSet> resultSets){

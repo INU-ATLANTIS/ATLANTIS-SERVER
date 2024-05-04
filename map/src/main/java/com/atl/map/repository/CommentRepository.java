@@ -20,7 +20,9 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
                     "u.nickname, " + 
                     "u.profileImage, " +
                     "IFNULL(c.updateDate, c.createDate) AS writeDatetime, " +
-                    "c.content " + 
+                    "c.content, " + 
+                    "c.parentId, " +
+                    "c.commentId " +
                     "FROM comment AS c " + 
                     "JOIN user AS u ON c.userId = u.userId " + 
                     "WHERE c.postId = ?1 " +
@@ -28,6 +30,22 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
         nativeQuery = true
     )
     List<GetCommentListResultSet> getCommentList(Integer postId);
+
+    @Query(
+        value="SELECT " + 
+                    "u.nickname, " + 
+                    "u.profileImage, " +
+                    "IFNULL(c.updateDate, c.createDate) AS writeDatetime, " +
+                    "c.content, " + 
+                    "c.parentId, " +
+                    "c.commentId " +
+                    "FROM comment AS c " + 
+                    "JOIN user AS u ON c.userId = u.userId " + 
+                    "WHERE c.parentId = ?1 " +
+                    "ORDER BY writeDatetime", 
+        nativeQuery = true
+    )
+    List<GetCommentListResultSet> getChildCommentList(Integer commentId);
 
     void deleteByUserId(int userId);
 }

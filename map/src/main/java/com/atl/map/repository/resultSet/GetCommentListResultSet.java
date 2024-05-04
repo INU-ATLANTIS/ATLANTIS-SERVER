@@ -8,5 +8,8 @@ public interface GetCommentListResultSet {
     String getProfileImage();
     LocalDateTime getWriteDatetime();
     String getContent();
+    Integer getParentId();
+    Integer getCommentId();
+    Integer getPostId();
     
 }

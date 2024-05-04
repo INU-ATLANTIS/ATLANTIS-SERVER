@@ -96,4 +96,13 @@ public class MarkerController {
         return response;
     }
 
+    
+    @GetMapping("{buildingId}/imagelist")
+    public ResponseEntity<? super GetBuildingImageResponseDto> getSearchBuilding(
+        @PathVariable("buildingId") Integer buildingId
+    ){
+        ResponseEntity<? super GetBuildingImageResponseDto> response = markerService.getBuildingImage(buildingId);
+        return response;
+    }
+
 }

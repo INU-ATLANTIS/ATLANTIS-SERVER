@@ -12,6 +12,7 @@ import com.atl.map.dto.request.marker.PatchMarkerRequestDto;
 import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.marker.CreateMarkerResponseDto;
 import com.atl.map.dto.response.marker.DeleteMarkerResponseDto;
+import com.atl.map.dto.response.marker.GetBuildingImageResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingListResponseDto;
 import com.atl.map.dto.response.marker.GetBuildingResponseDto;
 import com.atl.map.dto.response.marker.GetMarkerResponseDto;
@@ -20,10 +21,12 @@ import com.atl.map.dto.response.marker.GetTopMarkerResponseDto;
 import com.atl.map.dto.response.marker.GetUserMarkerResponseDto;
 import com.atl.map.dto.response.marker.PatchMarekrResponseDto;
 import com.atl.map.entity.BuildingEntity;
+import com.atl.map.entity.FloorpicEntity;
 import com.atl.map.entity.MarkerEntity;
 import com.atl.map.entity.PostEntity;
 import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.BuildingRepository;
+import com.atl.map.repository.FloorpicRepository;
 import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
@@ -39,6 +42,7 @@ public class MarkerServiceImplement implements MarkerService{
     private final MarkerRepository markerRepository;
     private final PostRepository postRepository;
     private final BuildingRepository buildingRepository;
+    private final FloorpicRepository floorpicRepository;
     
     @Override
     public ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId) {
@@ -193,6 +197,21 @@ public class MarkerServiceImplement implements MarkerService{
         }
         
         return GetSearchBuildingResponseDto.success(buildingEntity.getBuildingId());
+    }
+    @Override
+    public ResponseEntity<? super GetBuildingImageResponseDto> getBuildingImage(Integer buildingId) {
+        
+        List<FloorpicEntity> srcList;
+        try{
+            srcList = floorpicRepository.findByBuildingId(buildingId);
+
+        }catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return GetBuildingImageResponseDto.success(srcList);
+    
     }
    
 }

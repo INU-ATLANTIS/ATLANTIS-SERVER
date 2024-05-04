@@ -116,4 +116,23 @@ public class PostController {
         ResponseEntity<? super GetBuildingPostListResponseDto> response = postService.getBuildingPostList(buildingId);
         return response;
     }
+
+    @GetMapping("/{commentId}/child-comments")
+    public ResponseEntity<? super GetChildCommentListResponseDto> getChildComments(
+        @PathVariable("commentId") Integer commentId
+    ){
+        ResponseEntity<? super GetChildCommentListResponseDto> response = postService.getChildCommentList(commentId);
+        return response;
+    }
+    
+    @PostMapping("/{postid}/{commentId}/comment")
+    public ResponseEntity<? super PostChildCommentResponseDto> postChildComments(
+        @RequestBody @Valid PostChildCommentRequestDto requestBody,
+        @PathVariable("postid") Integer postId,
+        @PathVariable("commentId") Integer commentId,
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super PostChildCommentResponseDto> response = postService.postChildComment(requestBody, email, postId, commentId);
+        return response;
+    }
 }

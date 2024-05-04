@@ -13,6 +13,7 @@ public interface ResponseCode {
     String NOT_EXISTED_POST = "NP";
     String NOT_EXISTED_MARKER = "NM";
     String NOT_EXISTED_NOTIFICATION = "NN";
+    String NOT_EXISTED_COMMENT = "NC";
 
     // HTTP Status 401
     String SIGN_IN_FAIL = "SF";

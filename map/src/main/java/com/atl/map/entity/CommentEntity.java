@@ -2,6 +2,7 @@ package com.atl.map.entity;
 
 import java.time.LocalDateTime;
 
+import com.atl.map.dto.request.post.PostChildCommentRequestDto;
 import com.atl.map.dto.request.post.PostCommentRequestDto;
 
 import jakarta.persistence.Entity;
@@ -30,10 +31,21 @@ public class CommentEntity {
     private LocalDateTime updateDate;
     private Integer parentId;
 
-    public CommentEntity(PostCommentRequestDto dto, Integer postId2, int userId2) {
+    public CommentEntity(PostCommentRequestDto dto, Integer postId, int userId) {
 
-        this.userId = userId2;
-        this.postId = postId2;
+        this.userId = userId;
+        this.postId = postId;
+        this.content = dto.getContent();
+        this.createDate = LocalDateTime.now();
+        this.likeCount = 0;
+
+    }
+
+    public CommentEntity(PostChildCommentRequestDto dto, Integer postId, Integer parentId, int userId) {
+
+        this.parentId = parentId;
+        this.userId = userId;
+        this.postId = postId;
         this.content = dto.getContent();
         this.createDate = LocalDateTime.now();
         this.likeCount = 0;
