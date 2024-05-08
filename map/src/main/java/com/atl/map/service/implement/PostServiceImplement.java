@@ -8,25 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.atl.map.dto.request.post.CreatePostRequestDto;
-import com.atl.map.dto.request.post.PatchPostRequestDto;
-import com.atl.map.dto.request.post.PostChildCommentRequestDto;
-import com.atl.map.dto.request.post.PostCommentRequestDto;
+import com.atl.map.dto.request.post.*;
 import com.atl.map.dto.response.ResponseDto;
-import com.atl.map.dto.response.post.CreatePostResponseDto;
-import com.atl.map.dto.response.post.DeletePostResponseDto;
-import com.atl.map.dto.response.post.GetBuildingPostListResponseDto;
-import com.atl.map.dto.response.post.GetChildCommentListResponseDto;
-import com.atl.map.dto.response.post.GetCommentListResponseDto;
-import com.atl.map.dto.response.post.GetLatestPostResponseDto;
-import com.atl.map.dto.response.post.GetMyPostResponseDto;
-import com.atl.map.dto.response.post.GetPostResponseDto;
-import com.atl.map.dto.response.post.GetSearchPostListResponseDto;
-import com.atl.map.dto.response.post.GetTopPostListResponseDto;
-import com.atl.map.dto.response.post.PatchPostResponseDto;
-import com.atl.map.dto.response.post.PostChildCommentResponseDto;
-import com.atl.map.dto.response.post.PostCommentResponseDto;
-import com.atl.map.dto.response.post.PutFavoriteResponseDto;
+import com.atl.map.dto.response.post.*;
 import com.atl.map.entity.CommentEntity;
 import com.atl.map.entity.FavoriteEntity;
 import com.atl.map.entity.ImageEntity;
@@ -369,6 +353,28 @@ public class PostServiceImplement implements PostService {
         }
     
         return GetMyPostResponseDto.success(postListViewEntities);
+    }
+
+    @Override
+    public ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId) {
+        
+        try
+        {
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null ) return DeletePostResponseDto.notExistUser();
+
+            CommentEntity commentEntity = commentRepository.findByCommentId(commentId);
+            if(commentEntity == null) return DeleteCommentResponseDto.notExistComment();
+
+            if(commentEntity.getUserId() != userEntity.getUserId()) return DeleteCommentResponseDto.noPermisson();
+
+            commentRepository.delete(commentEntity);
+        }
+        catch(Exception exception){
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return DeleteCommentResponseDto.success();
     }
     
 }

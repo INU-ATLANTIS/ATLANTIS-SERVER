@@ -143,4 +143,13 @@ public class PostController {
         ResponseEntity<? super PostChildCommentResponseDto> response = postService.postChildComment(requestBody, email, postId, commentId);
         return response;
     }
+
+    @DeleteMapping("/comment/{commentId}")
+    public ResponseEntity<? super DeleteCommentResponseDto> deleteComments(
+        @PathVariable("commentId") Integer commentId,
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super DeleteCommentResponseDto> response = postService.deleteComment(email, commentId);
+        return response;
+    }
 }
