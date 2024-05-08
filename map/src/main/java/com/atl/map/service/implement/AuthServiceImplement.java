@@ -6,18 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.atl.map.common.CertificationNumber;
-import com.atl.map.dto.request.auth.CheckCertificationRequestDto;
-import com.atl.map.dto.request.auth.EmailCertificationRequestDto;
-import com.atl.map.dto.request.auth.EmailCheckRequestDto;
-import com.atl.map.dto.request.auth.SignInRequestDto;
-import com.atl.map.dto.request.auth.SignUpRequestDto;
+import com.atl.map.dto.request.auth.*;
 import com.atl.map.dto.response.ResponseDto;
-import com.atl.map.dto.response.auth.CheckCertificationResponseDto;
-import com.atl.map.dto.response.auth.DeleteAccountResponseDto;
-import com.atl.map.dto.response.auth.EmailCertificationResponseDto;
-import com.atl.map.dto.response.auth.EmailCheckResponseDto;
-import com.atl.map.dto.response.auth.SignInResponseDto;
-import com.atl.map.dto.response.auth.SignUpResponseDto;
+import com.atl.map.dto.response.auth.*;
 import com.atl.map.entity.CertificationEntity;
 import com.atl.map.entity.UserEntity;
 import com.atl.map.provider.EmailProvider;
@@ -75,16 +66,19 @@ public class AuthServiceImplement implements AuthService {
         try{
             
             String email = dto.getEmail();
-            
-            boolean isExistEmail = userRepository.existsByEmail(email);
-            if (isExistEmail) return EmailCertificationResponseDto.duplicateEmail();
-
             String certificationNumber = CertificationNumber.getCertificationNumber();
-
-            boolean isSuccessd = emailProvider.sendCertificationMail(email, certificationNumber);
+            boolean isSuccessd = emailProvider.sendCertificationMail(email, certificationNumber);        
             if(!isSuccessd) return EmailCertificationResponseDto.mailSendFail();
+            
+            CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
+            
+            if(certificationEntity == null){
+                certificationEntity = new CertificationEntity(email, certificationNumber);
+            }
+            else{
+                certificationEntity.setCertificationNumber(certificationNumber);
+            }
 
-            CertificationEntity certificationEntity = new CertificationEntity(email, certificationNumber);
             certificationRepository.save(certificationEntity);
 
         }catch (Exception exception) {
@@ -124,6 +118,7 @@ public class AuthServiceImplement implements AuthService {
         return CheckCertificationResponseDto.success();
     }
 
+    @Transactional
     @Override
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
         
@@ -205,6 +200,41 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.databaseError();
         }
         return DeleteAccountResponseDto.success();
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super ChangePasswordResponseDto> changePassword(ChangePasswordRequestDto dto) {
+        try{
+
+            String email = dto.getEmail();
+            String certificationNumber = dto.getCertificationNumber();
+            
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return ChangePasswordResponseDto.noExistUser();
+            
+            CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
+            if(certificationEntity == null) return ChangePasswordResponseDto.certificationFail();
+
+            boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);           
+            if(!isMatched) return ChangePasswordResponseDto.certificationFail();
+
+            String password = dto.getPassword();
+            String encodedPassword = passwordEncoder.encode(password);
+            dto.setPassword(encodedPassword);
+
+            userEntity.setPassword(encodedPassword);
+            userRepository.save(userEntity);
+
+            certificationRepository.delete(certificationEntity);
+            //certificationRepository.deleteByEmail(email);
+
+        }catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return ChangePasswordResponseDto.success();
     }
 
 }

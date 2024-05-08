@@ -18,6 +18,7 @@ public class PostListViewEntity {
     
     @Id
     private int postId;
+    private int userId;
     private String title;
     private String content;
     private int likeCount;

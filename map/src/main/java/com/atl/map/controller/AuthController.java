@@ -8,17 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.atl.map.dto.response.auth.EmailCertificationResponseDto;
-import com.atl.map.dto.response.auth.EmailCheckResponseDto;
-import com.atl.map.dto.request.auth.CheckCertificationRequestDto;
-import com.atl.map.dto.response.auth.CheckCertificationResponseDto;
-import com.atl.map.dto.response.auth.DeleteAccountResponseDto;
-import com.atl.map.dto.request.auth.EmailCertificationRequestDto;
-import com.atl.map.dto.request.auth.EmailCheckRequestDto;
-import com.atl.map.dto.request.auth.SignInRequestDto;
-import com.atl.map.dto.response.auth.SignInResponseDto;
-import com.atl.map.dto.request.auth.SignUpRequestDto;
-import com.atl.map.dto.response.auth.SignUpResponseDto;
+import com.atl.map.dto.response.auth.*;
+import com.atl.map.dto.request.auth.*;
 import com.atl.map.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -75,6 +66,14 @@ public class AuthController {
     public ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(
         @AuthenticationPrincipal String email) {
         ResponseEntity<? super DeleteAccountResponseDto> response = authService.deleteAccount(email);
+        return response;
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<? super ChangePasswordResponseDto> changePassword (
+       @RequestBody @Valid ChangePasswordRequestDto requestBody)
+    {
+        ResponseEntity<? super ChangePasswordResponseDto> response = authService.changePassword(requestBody);
         return response;
     }
     

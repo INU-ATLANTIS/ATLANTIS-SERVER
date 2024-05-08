@@ -13,5 +13,6 @@ public interface PostListViewRepository extends JpaRepository<PostListViewEntity
     List<PostListViewEntity> findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(LocalDateTime writeDatetime);
     List<PostListViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(String title, String content);
     List<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDesc(int buildingId);
+    List<PostListViewEntity> findByUserIdOrderByWriteDatetimeDesc(int userId);
 
 }

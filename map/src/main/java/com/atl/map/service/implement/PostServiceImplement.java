@@ -19,6 +19,7 @@ import com.atl.map.dto.response.post.GetBuildingPostListResponseDto;
 import com.atl.map.dto.response.post.GetChildCommentListResponseDto;
 import com.atl.map.dto.response.post.GetCommentListResponseDto;
 import com.atl.map.dto.response.post.GetLatestPostResponseDto;
+import com.atl.map.dto.response.post.GetMyPostResponseDto;
 import com.atl.map.dto.response.post.GetPostResponseDto;
 import com.atl.map.dto.response.post.GetSearchPostListResponseDto;
 import com.atl.map.dto.response.post.GetTopPostListResponseDto;
@@ -352,6 +353,22 @@ public class PostServiceImplement implements PostService {
 
         return PostChildCommentResponseDto.success();
 
+    }
+
+    @Override
+    public ResponseEntity<? super GetMyPostResponseDto> getUserPostList(String email) {
+        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
+        try {
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return GetMyPostResponseDto.notExistUser();
+            postListViewEntities = postListViewRepository.findByUserIdOrderByWriteDatetimeDesc(userEntity.getUserId());
+    
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    
+        return GetMyPostResponseDto.success(postListViewEntities);
     }
     
 }
