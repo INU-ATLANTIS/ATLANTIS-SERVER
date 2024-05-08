@@ -9,4 +9,6 @@ public interface GetPostResultSet {
     String getWriterNickname();
     String getWriterProfileImage();
     Integer getBuildingId();
+    int getlikeCount();
+    int getCommentCount();
 }

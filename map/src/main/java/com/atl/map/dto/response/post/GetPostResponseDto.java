@@ -30,6 +30,8 @@ public class GetPostResponseDto extends ResponseDto {
     private String writerNickname; // 작성자 닉네임은 null일 수도 있습니다.
     private String writerProfileImage; // 작성자 프로필 이미지 URL은 null일 수도 있습니다.
     private Integer buildingId;
+    private int likeCount;
+    private int commentCount;
 
     public GetPostResponseDto(GetPostResultSet resultSet, List<ImageEntity> imageEntities) {
         super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
@@ -49,6 +51,8 @@ public class GetPostResponseDto extends ResponseDto {
         this.writerNickname = resultSet.getWriterNickname();
         this.writerProfileImage = resultSet.getWriterProfileImage();
         this.buildingId = resultSet.getBuildingId();
+        this.likeCount = resultSet.getlikeCount();
+        this.commentCount = resultSet.getCommentCount();
     }
 
     public static ResponseEntity<GetPostResponseDto> success(GetPostResultSet resultSet, List<ImageEntity> imageEntities){

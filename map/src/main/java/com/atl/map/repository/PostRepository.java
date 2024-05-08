@@ -18,6 +18,8 @@ public interface PostRepository extends JpaRepository<PostEntity, Integer>{
                    "IFNULL(p.updateDate, p.createDate) AS writeDatetime, " +
                    "p.userId AS writerUserId, u.nickname AS writerNickname, " +
                    "u.profileImage AS writerProfileImage, " +
+                   "p.likeCount, " +
+                   "p.commentCount, " +
                    "p.buildingId " +
                    "FROM post p INNER JOIN user u ON p.userId = u.userId " +
                    "WHERE p.postId = ?1", nativeQuery = true)
