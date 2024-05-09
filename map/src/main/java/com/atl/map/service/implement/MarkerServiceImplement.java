@@ -184,23 +184,25 @@ public class MarkerServiceImplement implements MarkerService{
         }
         return GetUserMarkerResponseDto.success(list);
     }
+    
     @Override
     public ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuildingId(String word) {
         
-        BuildingEntity buildingEntity;
-        try{
-            buildingEntity = buildingRepository.findByBuildingCodeContains(word);
-            if(buildingEntity == null){
-                buildingEntity = buildingRepository.findByNameContains(word);
+        try {
+            List<BuildingEntity> buildings = buildingRepository.findByBuildingCodeContains(word);
+            if (buildings.isEmpty()) {
+                buildings = buildingRepository.findByNameContains(word);
             }
-
-        }catch(Exception exception){
+    
+            BuildingEntity firstBuilding = buildings.get(0); // 첫 번째 결과만 사용
+            return GetSearchBuildingResponseDto.success(firstBuilding.getBuildingId());
+    
+        } catch (Exception exception) {
             exception.printStackTrace();
-            return ResponseDto.databaseError();
+            return ResponseDto.databaseError(); // 적절한 오류 처리 응답 반환
         }
-        
-        return GetSearchBuildingResponseDto.success(buildingEntity.getBuildingId());
     }
+    
     @Override
     public ResponseEntity<? super GetBuildingImageResponseDto> getBuildingImage(Integer buildingId) {
         
