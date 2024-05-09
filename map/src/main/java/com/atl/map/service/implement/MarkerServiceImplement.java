@@ -190,6 +190,9 @@ public class MarkerServiceImplement implements MarkerService{
         BuildingEntity buildingEntity;
         try{
             buildingEntity = buildingRepository.findByBuildingCodeContains(word);
+            if(buildingEntity == null){
+                buildingEntity = buildingRepository.findByNameContains(word);
+            }
 
         }catch(Exception exception){
             exception.printStackTrace();
