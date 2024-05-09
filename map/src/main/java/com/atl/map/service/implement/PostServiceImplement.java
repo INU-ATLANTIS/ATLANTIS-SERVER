@@ -368,7 +368,10 @@ public class PostServiceImplement implements PostService {
 
             if(commentEntity.getUserId() != userEntity.getUserId()) return DeleteCommentResponseDto.noPermisson();
 
+            PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
+            postEntity.decreaseCommentCount();
             commentRepository.delete(commentEntity);
+        
         }
         catch(Exception exception){
             exception.printStackTrace();
