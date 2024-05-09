@@ -50,6 +50,14 @@ public class PostController {
         return response;
     }
 
+    @GetMapping("/my/favorite")
+    public ResponseEntity<? super GetMyLikePostResponseDto> getMyLikePosts(
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super GetMyLikePostResponseDto> response = postService.getUserLikePostList(email);
+        return response;
+    }
+
     @PutMapping("/{postid}/like")
     public ResponseEntity<? super PutFavoriteResponseDto> putLike(
         @PathVariable("postid") Integer postId,

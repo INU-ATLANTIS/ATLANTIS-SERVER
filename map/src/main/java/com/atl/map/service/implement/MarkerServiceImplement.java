@@ -28,10 +28,12 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.BuildingRepository;
 import com.atl.map.repository.FloorpicRepository;
 import com.atl.map.repository.MarkerRepository;
+import com.atl.map.repository.NotificationRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.service.MarkerService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,6 +45,7 @@ public class MarkerServiceImplement implements MarkerService{
     private final PostRepository postRepository;
     private final BuildingRepository buildingRepository;
     private final FloorpicRepository floorpicRepository;
+    private final NotificationRepository notificationRepository;
     
     @Override
     public ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId) {
@@ -149,6 +152,8 @@ public class MarkerServiceImplement implements MarkerService{
                 return DeleteMarkerResponseDto.notExistMarker();}
             if (!markerEntity.getUserId().equals(userEntity.getUserId())) {
                 return DeleteMarkerResponseDto.noPermission();}
+            
+            notificationRepository.deleteByMarkerId(markerEntity.getMarkerId());
             markerRepository.delete(markerEntity);
 
         }catch(Exception exception){
@@ -219,4 +224,12 @@ public class MarkerServiceImplement implements MarkerService{
     
     }
    
+    @Transactional
+    public void deleteMarkersAndNotificationsByPostId(Integer postId) {
+        List<MarkerEntity> markers = markerRepository.findByPostId(postId);
+        for (MarkerEntity marker : markers) {
+            notificationRepository.deleteByMarkerId(marker.getMarkerId());
+            markerRepository.delete(marker);
+        }
+    }
 }

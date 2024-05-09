@@ -17,6 +17,7 @@ public interface PostService {
     ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord);
     ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId);
     ResponseEntity<? super GetMyPostResponseDto> getUserPostList(String email);
+    ResponseEntity<? super GetMyLikePostResponseDto> getUserLikePostList(String email);
 
     ResponseEntity<? super PostCommentResponseDto> postComment(PostCommentRequestDto dto, Integer postId, String email);
     ResponseEntity<? super GetCommentListResponseDto> getCommentList(Integer postId);

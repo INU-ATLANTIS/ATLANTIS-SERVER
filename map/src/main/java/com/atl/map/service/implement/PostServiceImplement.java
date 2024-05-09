@@ -3,6 +3,7 @@ package com.atl.map.service.implement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,13 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.CommentRepository;
 import com.atl.map.repository.FavoriteRepository;
 import com.atl.map.repository.ImageRepository;
+import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.PostListViewRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.repository.resultSet.GetCommentListResultSet;
 import com.atl.map.repository.resultSet.GetPostResultSet;
+import com.atl.map.service.MarkerService;
 import com.atl.map.service.PostService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,7 +43,7 @@ public class PostServiceImplement implements PostService {
     private final FavoriteRepository favoriteRepository;
     private final CommentRepository commentRepository;
     private final PostListViewRepository postListViewRepository;
-    
+    private final MarkerService markerService;
 
     @Transactional
     @Override
@@ -191,24 +194,25 @@ public class PostServiceImplement implements PostService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<? super DeletePostResponseDto> deletePost(Integer postId, String email) {
         
-        try
-        {
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null ) return DeletePostResponseDto.notExistUser();
-
+            if (userEntity == null) return DeletePostResponseDto.notExistUser();
+    
             PostEntity postEntity = postRepository.findByPostId(postId);
-            if(postEntity == null) return DeletePostResponseDto.notExistPost();
-
-            if(postEntity.getUserId() != userEntity.getUserId()) return DeletePostResponseDto.noPermisson();
-
+            if (postEntity == null) return DeletePostResponseDto.notExistPost();
+    
+            if (postEntity.getUserId() != userEntity.getUserId()) return DeletePostResponseDto.noPermisson();
+    
             imageRepository.deleteByPostId(postId);
             commentRepository.deleteByPostId(postId);
             favoriteRepository.deleteByPostId(postId);
+            markerService.deleteMarkersAndNotificationsByPostId(postId); // 마커 및 연동 알람 삭제
             postRepository.delete(postEntity);
-        }
-        catch(Exception exception){
+
+        } catch (Exception exception) {
             exception.printStackTrace();
             return ResponseDto.databaseError();
         }
@@ -379,5 +383,28 @@ public class PostServiceImplement implements PostService {
         }
         return DeleteCommentResponseDto.success();
     }
+
+    @Override
+    public ResponseEntity<? super GetMyLikePostResponseDto> getUserLikePostList(String email) {
+    try {
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if(userEntity == null) return GetMyLikePostResponseDto.notExistUser();
+        
+        // 사용자가 좋아요를 누른 게시글 ID 목록 가져오기
+        List<FavoriteEntity> favorites = favoriteRepository.findByUserId(userEntity.getUserId());
+        List<Integer> postIds = favorites.stream()
+                                         .map(FavoriteEntity::getPostId)
+                                         .collect(Collectors.toList());
+        
+        // 게시글 ID 목록을 바탕으로 PostListViewEntity 목록 가져오기
+        List<PostListViewEntity> postListViewEntities = postListViewRepository.findAllById(postIds);
+
+        return GetMyLikePostResponseDto.success(postListViewEntities);
+    } catch (Exception exception) {
+        exception.printStackTrace();
+        return ResponseDto.databaseError();
+    }
+}
+
     
 }

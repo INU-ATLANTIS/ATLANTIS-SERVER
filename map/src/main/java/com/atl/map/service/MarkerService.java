@@ -26,4 +26,6 @@ public interface MarkerService {
     ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuildingId(String word);
 
     ResponseEntity<? super GetBuildingImageResponseDto> getBuildingImage(Integer buildingId);
+
+    void deleteMarkersAndNotificationsByPostId(Integer postId);
 }

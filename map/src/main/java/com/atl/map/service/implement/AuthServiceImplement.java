@@ -16,6 +16,7 @@ import com.atl.map.provider.JwtProvider;
 import com.atl.map.repository.CertificationRepository;
 import com.atl.map.repository.CommentRepository;
 import com.atl.map.repository.MarkerRepository;
+import com.atl.map.repository.NotificationRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.service.AuthService;
 
@@ -39,6 +40,7 @@ public class AuthServiceImplement implements AuthService {
     private final JwtProvider jwtProvider;
     private final MarkerRepository markerRepository;
     private final CommentRepository commentRepository;
+    private final NotificationRepository notificationRepository;
 
     //의존성 주입 아님
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -190,6 +192,7 @@ public class AuthServiceImplement implements AuthService {
             if (userEntity == null) {
                 return DeleteAccountResponseDto.notExistUser();
             }
+            notificationRepository.deleteByUserId(userEntity.getUserId());
             markerRepository.deleteByUserId(userEntity.getUserId());
             commentRepository.deleteByUserId(userEntity.getUserId());
             userEntity.deletedUser();
