@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
-import com.atl.map.dto.response.user.PatchNicknameResponseDto;
-import com.atl.map.dto.response.user.PatchProfileImageResponseDto;
-import com.atl.map.dto.request.user.PatchNicknameRequestDto;
-import com.atl.map.dto.request.user.PatchProfileImageRequestDto;
-import com.atl.map.dto.response.user.GetSignInUserResponseDto;
-import com.atl.map.dto.response.user.GetUserResponseDto;
+import com.atl.map.dto.request.user.*;
+import com.atl.map.dto.response.user.*;
+import org.springframework.web.bind.annotation.PostMapping;
+
 
 
 @RestController
@@ -68,4 +66,14 @@ public class UserController {
         ResponseEntity<? super PatchProfileImageResponseDto> response = userService.patchProfileImage(requestBody, email);
         return response;
     }
+
+/*     @PostMapping("/{userid}")
+    public ResponseEntity<? super PostReportResponseDto> report(
+        @PathVariable("userid") int userid,
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super PostReportResponseDto> response = userService.report(email, userid);
+        return response;
+    } */
+    
 }

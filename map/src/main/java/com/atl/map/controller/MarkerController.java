@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.atl.map.dto.request.marker.CreateMarkerRequestDto;
-import com.atl.map.dto.request.marker.*;
+import com.atl.map.dto.request.marker.PatchMarkerRequestDto;
 import com.atl.map.dto.response.marker.*;
 import com.atl.map.service.MarkerService;
 

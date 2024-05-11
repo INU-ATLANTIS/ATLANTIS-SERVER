@@ -18,6 +18,7 @@ public class CreateMarkerRequestDto {
     private BigDecimal x;
     @NotNull
     private BigDecimal y;
+    @NotNull
     private Integer postId;
     private String type;
 
