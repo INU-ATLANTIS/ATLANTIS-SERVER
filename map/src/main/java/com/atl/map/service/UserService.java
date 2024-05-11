@@ -11,5 +11,5 @@ public interface UserService {
     ResponseEntity<? super GetSignInUserResponseDto> getSignInUser(String email);
     ResponseEntity<? super PatchNicknameResponseDto> patchNickname(PatchNicknameRequestDto dto, String email);
     ResponseEntity<? super PatchProfileImageResponseDto> patchProfileImage(PatchProfileImageRequestDto dto, String email);
-    //ResponseEntity<? super PostReportResponseDto> repost(String email, int userid);
+    ResponseEntity<? super PostReportResponseDto> report(String email, int userid);
 }

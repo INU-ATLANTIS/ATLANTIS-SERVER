@@ -28,4 +28,9 @@ public class PostChildCommentResponseDto extends ResponseDto {
         ResponseDto responseBody = new ResponseDto(ResponseCode.NOT_EXISTED_USER, ResponseMessage.NOT_EXISTED_USER);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
     }
+
+    public static ResponseEntity<ResponseDto> reportedUser(){
+        ResponseDto responseBody = new ResponseDto(ResponseCode.REPORTED_USER, ResponseMessage.REPORTED_USER);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+    }
 }

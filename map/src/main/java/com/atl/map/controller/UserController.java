@@ -67,13 +67,13 @@ public class UserController {
         return response;
     }
 
-/*     @PostMapping("/{userid}")
+    @PostMapping("/report/{userid}")
     public ResponseEntity<? super PostReportResponseDto> report(
         @PathVariable("userid") int userid,
         @AuthenticationPrincipal String email
     ){
         ResponseEntity<? super PostReportResponseDto> response = userService.report(email, userid);
         return response;
-    } */
+    }
     
 }

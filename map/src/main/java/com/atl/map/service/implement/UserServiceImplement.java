@@ -11,7 +11,9 @@ import com.atl.map.dto.response.user.GetUserResponseDto;
 import com.atl.map.dto.response.user.PatchNicknameResponseDto;
 import com.atl.map.dto.response.user.PatchProfileImageResponseDto;
 import com.atl.map.dto.response.user.PostReportResponseDto;
+import com.atl.map.entity.ReportEntity;
 import com.atl.map.entity.UserEntity;
+import com.atl.map.repository.ReportRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.service.UserService;
 
@@ -23,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImplement implements UserService {
    
     private final UserRepository userRepository;
-    //private final ReportRepository reportRepository;
+    private final ReportRepository reportRepository;
 
     @Override
     public ResponseEntity<? super GetSignInUserResponseDto> getSignInUser(String email) {
@@ -105,18 +107,23 @@ public class UserServiceImplement implements UserService {
         return PatchProfileImageResponseDto.success();
     }
 
-/*     @Override
-    public ResponseEntity<? super PostReportResponseDto> repost(String email, int userid) {
+    @Override
+    public ResponseEntity<? super PostReportResponseDto> report(String email, int userid) {
         
         try{
 
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) PostReportResponseDto.noExistUser();
-            
-            //여기 이미 신고된 데이터인지 확인.
-            //신고x라면 유저엔티티로 신고 += 1 업데이트.
+            UserEntity reportUser = userRepository.findByEmail(email);
+            if(reportUser == null) return PostReportResponseDto.noExistUser();            
+            UserEntity reportedUser = userRepository.findByUserId(userid);
+            if(reportedUser == null) return PostReportResponseDto.noExistUser();
 
-
+            if(!reportRepository.existsByReportUserIdAndReportedUserId(reportUser.getUserId(), userid))
+            {
+               reportedUser.report();
+               userRepository.save(reportedUser);
+               ReportEntity reportEntity = new ReportEntity(reportUser.getUserId(), userid);
+               reportRepository.save(reportEntity);
+            }
  
         }catch(Exception exception){
             exception.printStackTrace();
@@ -124,6 +131,6 @@ public class UserServiceImplement implements UserService {
         }
 
         return PostReportResponseDto.success();
-    } */
+    }
     
 }

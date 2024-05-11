@@ -33,4 +33,9 @@ public class PostCommentResponseDto extends ResponseDto {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
     }
 
+    public static ResponseEntity<ResponseDto> reportedUser(){
+        ResponseDto responseBody = new ResponseDto(ResponseCode.REPORTED_USER, ResponseMessage.REPORTED_USER);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+    }
+
 }

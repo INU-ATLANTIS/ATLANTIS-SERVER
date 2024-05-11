@@ -56,6 +56,8 @@ public class PostServiceImplement implements PostService {
             if(!existedEmail) return CreatePostResponseDto.notExistUser();
 
             UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity.getReportedCount()>10) return CreatePostResponseDto.reportedUser();
+            
             postEntity = new PostEntity(dto, userEntity.getUserId());
             postRepository.save(postEntity);
 
@@ -140,8 +142,9 @@ public class PostServiceImplement implements PostService {
             PostEntity postEntity = postRepository.findByPostId(postId);
             if(postEntity == null) return PostCommentResponseDto.notExistPost();
 
-            boolean existedEmail = userRepository.existsByEmail(email);
-            if(!existedEmail) return PostCommentResponseDto.notExistUser();
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return PostCommentResponseDto.notExistUser();
+            if(userEntity.getReportedCount()>10) return PostCommentResponseDto.reportedUser();
 
             CommentEntity commentEntity = new CommentEntity(dto, postId, userRepository.findByEmail(email).getUserId());
             commentRepository.save(commentEntity);
@@ -326,9 +329,10 @@ public class PostServiceImplement implements PostService {
             PostEntity postEntity = postRepository.findByPostId(postId);
             if(postEntity == null) return PostChildCommentResponseDto.notExistPost();
 
-            boolean existedEmail = userRepository.existsByEmail(email);
-            if(!existedEmail) return PostChildCommentResponseDto.notExistUser();
-
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return PostChildCommentResponseDto.notExistUser();
+            if(userEntity.getReportedCount()>10) return PostChildCommentResponseDto.reportedUser();
+        
             CommentEntity commentEntity = new CommentEntity(dto, postId, commentId, userRepository.findByEmail(email).getUserId());
             commentRepository.save(commentEntity);
             postEntity.increaseCommentCount();

@@ -8,7 +8,7 @@ import com.atl.map.entity.UserEntity;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-
+    UserEntity findByUserId(int userId);
     UserEntity findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);

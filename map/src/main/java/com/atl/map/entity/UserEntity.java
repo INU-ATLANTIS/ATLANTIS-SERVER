@@ -36,6 +36,7 @@ public class UserEntity {
     private String nickname;
     private String role;
     private String profileImage;
+    private int reportedCount;
 
     public UserEntity(SignUpRequestDto dto) {
 
@@ -66,5 +67,9 @@ public class UserEntity {
         this.email="deleted_"+LocalDateTime.now()+"_"+this.email;
         LocalDateTime now = LocalDateTime.now();
         this.updateDate = now; 
+    }
+
+    public void report() {
+        this.reportedCount += 1;
     }
 }
