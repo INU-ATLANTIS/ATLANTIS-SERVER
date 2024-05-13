@@ -61,6 +61,13 @@ public class PostEntity {
         this.commentCount--;
     }
 
+    public void decreaseCommentCount(int count) {
+        this.commentCount -= count;
+        if (this.commentCount < 0) {
+            this.commentCount = 0; // 댓글 수가 음수가 되지 않도록 방지
+        }
+    }
+
     public void patchPost(PatchPostRequestDto dto){
         this.title = dto.getTitle();
         this.content = dto.getContent();

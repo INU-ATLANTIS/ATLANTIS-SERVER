@@ -365,28 +365,45 @@ public class PostServiceImplement implements PostService {
 
     @Override
     public ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId) {
-        
-        try
-        {
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null ) return DeletePostResponseDto.notExistUser();
-
+            if (userEntity == null) return DeletePostResponseDto.notExistUser();
+    
             CommentEntity commentEntity = commentRepository.findByCommentId(commentId);
-            if(commentEntity == null) return DeleteCommentResponseDto.notExistComment();
-
-            if(commentEntity.getUserId() != userEntity.getUserId()) return DeleteCommentResponseDto.noPermisson();
-
+            if (commentEntity == null) return DeleteCommentResponseDto.notExistComment();
+    
+            if (commentEntity.getUserId() != userEntity.getUserId()) return DeleteCommentResponseDto.noPermisson();    
+            // 게시글의 댓글 수 감소
             PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
-            postEntity.decreaseCommentCount();
+            
+            // 자식 댓글 재귀적으로 삭제하면서 댓글 수 감소
+            int deletedCommentsCount = deleteChildComments(commentId);
+    
+            // 부모 댓글 최종 삭제
             commentRepository.delete(commentEntity);
-        
-        }
-        catch(Exception exception){
+            
+            // 부모 댓글도 삭제된 것이므로 총 댓글 감소량은 deletedCommentsCount + 1
+            postEntity.decreaseCommentCount(deletedCommentsCount + 1);
+    
+            postRepository.save(postEntity);
+        } catch (Exception exception) {
             exception.printStackTrace();
             return ResponseDto.databaseError();
         }
         return DeleteCommentResponseDto.success();
     }
+    
+    private int deleteChildComments(Integer parentId) {
+        List<CommentEntity> childComments = commentRepository.findByParentId(parentId);
+        int deleteCount = 0;
+        for (CommentEntity childComment : childComments) {
+            deleteCount += deleteChildComments(childComment.getCommentId());
+            commentRepository.delete(childComment);
+            deleteCount++;
+        }
+        return deleteCount;
+    }
+    
 
     @Override
     public ResponseEntity<? super GetMyLikePostResponseDto> getUserLikePostList(String email) {
