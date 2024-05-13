@@ -23,6 +23,7 @@ public interface PostService {
     ResponseEntity<? super GetCommentListResponseDto> getCommentList(Integer postId);
     ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId);
 
+    ResponseEntity<? super GetMyCommentListResponseDto> getMyComment(String email);
     ResponseEntity<? super GetChildCommentListResponseDto> getChildCommentList(Integer parentId);
     ResponseEntity<? super PostChildCommentResponseDto> postChildComment(PostChildCommentRequestDto dto, String email, Integer postId, Integer commentId);
 

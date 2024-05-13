@@ -160,4 +160,13 @@ public class PostController {
         ResponseEntity<? super DeleteCommentResponseDto> response = postService.deleteComment(email, commentId);
         return response;
     }
+
+    
+    @GetMapping("/comment/my")
+    public ResponseEntity<? super GetMyCommentListResponseDto> getMyComments(
+        @AuthenticationPrincipal String email
+    ){
+        ResponseEntity<? super GetMyCommentListResponseDto> response = postService.getMyComment(email);
+        return response;
+    }
 }

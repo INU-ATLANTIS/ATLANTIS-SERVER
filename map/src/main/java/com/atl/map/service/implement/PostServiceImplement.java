@@ -410,5 +410,21 @@ public class PostServiceImplement implements PostService {
     }
 }
 
+    @Override
+    public ResponseEntity<? super GetMyCommentListResponseDto> getMyComment(String email) {
+        try {
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if(userEntity == null) return GetMyCommentListResponseDto.notExistUser();
+            
+            List<CommentEntity> list = commentRepository.findByUserId(userEntity.getUserId());
+
+            return GetMyCommentListResponseDto.success(list);
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    }
+
     
 }
