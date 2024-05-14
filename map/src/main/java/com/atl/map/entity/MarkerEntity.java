@@ -45,6 +45,7 @@ public class MarkerEntity {
         this.postId = dto.getPostId();
         this.name = dto.getName();
         this.userId = userId;
+        this.type = dto.getType();
     }
 
     public void patchMarker(PatchMarkerRequestDto dto){
