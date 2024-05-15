@@ -18,4 +18,5 @@ public interface FavoriteRepository extends JpaRepository<FavoriteEntity, Favori
     
     void deleteByPostId(Integer postId);
     List<FavoriteEntity> findByUserId(Integer userId);
+    void deleteByUserId(int userId);
 }

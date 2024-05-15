@@ -67,6 +67,9 @@ public class UserEntity {
         this.email="deleted_"+LocalDateTime.now()+"_"+this.email;
         LocalDateTime now = LocalDateTime.now();
         this.updateDate = now; 
+        this.role = "Deleted";
+        this.nickname = null;
+        this.profileImage = null;
     }
 
     public void report() {

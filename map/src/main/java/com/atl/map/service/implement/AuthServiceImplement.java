@@ -15,6 +15,7 @@ import com.atl.map.provider.EmailProvider;
 import com.atl.map.provider.JwtProvider;
 import com.atl.map.repository.CertificationRepository;
 import com.atl.map.repository.CommentRepository;
+import com.atl.map.repository.FavoriteRepository;
 import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.NotificationRepository;
 import com.atl.map.repository.UserRepository;
@@ -38,8 +39,7 @@ public class AuthServiceImplement implements AuthService {
     private final CertificationRepository certificationRepository;
     private final EmailProvider emailProvider;
     private final JwtProvider jwtProvider;
-    private final MarkerRepository markerRepository;
-    private final CommentRepository commentRepository;
+    private final FavoriteRepository favoriteRepository;
     private final NotificationRepository notificationRepository;
 
     //의존성 주입 아님
@@ -193,8 +193,7 @@ public class AuthServiceImplement implements AuthService {
                 return DeleteAccountResponseDto.notExistUser();
             }
             notificationRepository.deleteByUserId(userEntity.getUserId());
-            markerRepository.deleteByUserId(userEntity.getUserId());
-            commentRepository.deleteByUserId(userEntity.getUserId());
+            favoriteRepository.deleteByUserId(userEntity.getUserId());
             userEntity.deletedUser();
             userRepository.save(userEntity);
 
