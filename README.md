@@ -59,35 +59,35 @@
 
 ## 프로젝트 폴더 구조
 
-- **java/**: 소스 코드 루트 디렉토리
+- **java/**  소스 코드 루트 디렉토리
     - **com/**
         - **atl/**
-            - **map/**: 주요 애플리케이션 패키지
-                - **common/**: 공통 유틸리티 클래스
-                - **config/**: 설정 클래스
-                - **controller/**: 컨트롤러 클래스
-                - **dto/**: 데이터 전송 객체
-                    - **object/**: 객체 DTO
-                    - **request/**: 요청 DTO
+            - **map/**  주요 애플리케이션 패키지
+                - **common/**  공통 유틸리티 클래스
+                - **config/**  설정 클래스
+                - **controller/**  컨트롤러 클래스
+                - **dto/**  데이터 전송 객체
+                    - **object/**  객체 DTO
+                    - **request/**  요청 DTO
                         - **Noti/**
                         - **auth/**
                         - **marker**
                         - **post**
                         - **user**
-                    - **response/**: 응답 DTO
+                    - **response/**  응답 DTO
                         - **marker**
                         - **noti**
                         - **post**
                         - **user**
-                - **entity/**: 엔티티 클래스
-                    - **primaryKey/**: 복합 키 클래스
-                - **filter/**: 필터 클래스
-                - **handler/**: 예외 처리 핸들러
-                - **provider/**: 제공자 클래스 (예: 이메일, JWT)
-                - **repository/**: 리포지토리 인터페이스
-                    - **resultSet/**: 결과 셋 클래스
-                - **service/**: 서비스 클래스
-                    - **implement/**: 서비스 구현 클래스
+                - **entity/**  엔티티 클래스
+                    - **primaryKey/**  복합 키 클래스
+                - **filter/**  필터 클래스
+                - **handler/**  예외 처리 핸들러
+                - **provider/**  제공자 클래스 (예: 이메일, JWT)
+                - **repository/**  리포지토리 인터페이스
+                    - **resultSet/**  결과 셋 클래스
+                - **service/**  서비스 클래스
+                    - **implement/**  서비스 구현 클래스
 
 <br><br>
 
