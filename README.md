@@ -1,6 +1,6 @@
 # ATLANTIS-SERVER
 ![Frame 31](https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/fcab55b8-272f-4a06-86a9-6163561e612f)
-## TEAM ATLANTIS 졸업작품 (2023.09 ~ 2024.5)
+## TEAM ATLANTIS 졸업작품 (2023.09 ~ 2024.05)
 
 위치 기반 **맞춤형 알림**을 제공해요! 캠퍼스 내의 다양한 장소와 이벤트에 대한 **정보를 손쉽게 공유**해요
 <br><br>
