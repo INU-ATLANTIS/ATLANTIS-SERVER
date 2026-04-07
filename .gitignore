@@ -44,3 +44,6 @@ out/
 
 # Local dev docs
 IMPROVEMENT_GUIDE.md
+
+# Claude memory 
+.claude/memory/*

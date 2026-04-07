@@ -19,7 +19,9 @@ import com.atl.map.service.UserService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImplement implements UserService {
@@ -38,7 +40,7 @@ public class UserServiceImplement implements UserService {
             if(userEntity == null) return GetSignInUserResponseDto.noExistUser();
 
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("로그인 사용자 조회 실패 - email: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
@@ -56,7 +58,7 @@ public class UserServiceImplement implements UserService {
            if(userEntity == null) return GetUserResponseDto.noExistUser();
 
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("사용자 조회 실패 - email: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
@@ -69,7 +71,7 @@ public class UserServiceImplement implements UserService {
         try{
 
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) PatchNicknameResponseDto.noExistUser();
+            if(userEntity == null) return PatchNicknameResponseDto.noExistUser();
             
             String nickname = dto.getNickname();
             boolean existedNickname = nickname != null && userRepository.existsByNickname(nickname);
@@ -79,7 +81,7 @@ public class UserServiceImplement implements UserService {
             userRepository.save(userEntity);
  
          }catch(Exception exception){
-             exception.printStackTrace();
+             log.error("닉네임 변경 실패 - email: {}", email, exception);
              return ResponseDto.databaseError();
         }
 
@@ -93,14 +95,14 @@ public class UserServiceImplement implements UserService {
         try{
 
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) PatchProfileImageResponseDto.noExistUser();
+            if(userEntity == null) return PatchProfileImageResponseDto.noExistUser();
 
             String profileImage = dto.getProfileImage();
             userEntity.setProfileImage(profileImage);
             userRepository.save(userEntity);
  
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("프로필 이미지 변경 실패 - email: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
@@ -126,7 +128,7 @@ public class UserServiceImplement implements UserService {
             }
  
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("사용자 신고 실패 - reporter: {}, targetUserId: {}", email, userid, exception);
             return ResponseDto.databaseError();
         }
 

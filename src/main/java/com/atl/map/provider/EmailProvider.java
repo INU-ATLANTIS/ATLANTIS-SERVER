@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EmailProvider {
@@ -31,7 +33,7 @@ public class EmailProvider {
             javaMailSender.send(message);
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("이메일 발송 실패 - to: {}", email, exception);
             return false;
         }
 

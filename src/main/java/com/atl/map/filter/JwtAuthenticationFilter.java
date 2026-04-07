@@ -24,13 +24,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 요청마다 한 번씩 실행되는 필터로, JWT를 검증하고 인증 정보를 SecurityContext에 설정한다.
  * 이 클래스는 Spring Security의 OncePerRequestFilter를 확장하여 구현되었다.
  */
+@Slf4j
 @Component
-@RequiredArgsConstructor // final이나 @NonNull인 필드에 대한 생성자를 자동으로 생성
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository; // 사용자 정보에 접근하기 위한 레포지토리
@@ -73,7 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.setContext(securityContext);
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("JWT 인증 필터 처리 실패", exception);
         }
 
         // 모든 검증을 마치면, 다음 필터로 요청을 넘겨 처리한다.
