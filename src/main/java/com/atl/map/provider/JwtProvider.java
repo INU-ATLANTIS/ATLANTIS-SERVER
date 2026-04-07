@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtProvider {
     
@@ -52,7 +54,7 @@ public class JwtProvider {
             
             
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("JWT 검증 실패", exception);
             return null;
         }
 

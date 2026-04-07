@@ -23,18 +23,13 @@ import com.atl.map.service.AuthService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImplement implements AuthService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImplement.class);
-
-
-    //외부에서 제어역전 통해서 의존성 주입
     private final UserRepository userRepository;
     private final CertificationRepository certificationRepository;
     private final EmailProvider emailProvider;
@@ -42,20 +37,18 @@ public class AuthServiceImplement implements AuthService {
     private final FavoriteRepository favoriteRepository;
     private final NotificationRepository notificationRepository;
 
-    //의존성 주입 아님
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(EmailCheckRequestDto dto) {
 
         try {
-
             String userEmail = dto.getEmail();
             boolean isExistEmail = userRepository.existsByEmail(userEmail);
             if (isExistEmail) return EmailCheckResponseDto.duplicateEmail();
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("이메일 중복 확인 실패 - email: {}", dto.getEmail(), exception);
             return ResponseDto.databaseError();
         }
 
@@ -64,27 +57,25 @@ public class AuthServiceImplement implements AuthService {
 
     @Override
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertificaion(EmailCertificationRequestDto dto) {
-        
-        try{
-            
+
+        try {
             String email = dto.getEmail();
             String certificationNumber = CertificationNumber.getCertificationNumber();
-            boolean isSuccessd = emailProvider.sendCertificationMail(email, certificationNumber);        
-            if(!isSuccessd) return EmailCertificationResponseDto.mailSendFail();
-            
+            boolean isSuccessd = emailProvider.sendCertificationMail(email, certificationNumber);
+            if (!isSuccessd) return EmailCertificationResponseDto.mailSendFail();
+
             CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
-            
-            if(certificationEntity == null){
+
+            if (certificationEntity == null) {
                 certificationEntity = new CertificationEntity(email, certificationNumber);
-            }
-            else{
+            } else {
                 certificationEntity.setCertificationNumber(certificationNumber);
             }
 
             certificationRepository.save(certificationEntity);
 
-        }catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("이메일 인증번호 발송 실패 - email: {}", dto.getEmail(), exception);
             return ResponseDto.databaseError();
         }
 
@@ -96,47 +87,45 @@ public class AuthServiceImplement implements AuthService {
         String email = dto.getEmail();
         String certificationNumber = dto.getCertificationNumber();
 
-        logger.debug("Checking certification for email: {}", email);
+        log.debug("인증번호 확인 요청 - email: {}", email);
         try {
             CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 
-            // 인증 메일을 보낸 적 없을 때
             if (certificationEntity == null) {
-                logger.warn("No certification entity found for email: {}", email);
+                log.warn("인증 내역 없음 - email: {}", email);
                 return CheckCertificationResponseDto.certificationFail();
             }
 
-            boolean isMatched = certificationEntity.getEmail().equals(email) && certificationEntity.getCertificationNumber().equals(certificationNumber);
+            boolean isMatched = certificationEntity.getEmail().equals(email)
+                    && certificationEntity.getCertificationNumber().equals(certificationNumber);
             if (!isMatched) {
-                logger.info("Certification number does not match for email: {}", email);
+                log.info("인증번호 불일치 - email: {}", email);
                 return CheckCertificationResponseDto.certificationFail();
             }
         } catch (Exception exception) {
-            logger.error("Database error during certification check for email: {}", email, exception);
+            log.error("인증번호 확인 중 오류 - email: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
-        logger.info("Certification check successful for email: {}", email);
+        log.info("인증번호 확인 성공 - email: {}", email);
         return CheckCertificationResponseDto.success();
     }
 
     @Transactional
     @Override
     public ResponseEntity<? super SignUpResponseDto> signUp(SignUpRequestDto dto) {
-        
-        try{
 
+        try {
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
             boolean isExistEmail = userRepository.existsByEmail(email);
-            if(isExistEmail) return SignUpResponseDto.duplicateEmail();
-            
+            if (isExistEmail) return SignUpResponseDto.duplicateEmail();
+
             CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
-            // 인증 번호를 찾을 수 없는 경우의 예외 처리
-            if(certificationEntity == null) return SignUpResponseDto.certificationFail();
+            if (certificationEntity == null) return SignUpResponseDto.certificationFail();
             boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);
-            
-            if(!isMatched) return SignUpResponseDto.certificationFail();
+
+            if (!isMatched) return SignUpResponseDto.certificationFail();
 
             String password = dto.getPassword();
             String encodedPassword = passwordEncoder.encode(password);
@@ -146,10 +135,9 @@ public class AuthServiceImplement implements AuthService {
             userRepository.save(userEntity);
 
             certificationRepository.delete(certificationEntity);
-            //certificationRepository.deleteByEmail(email);
 
-        }catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("회원가입 실패 - email: {}", dto.getEmail(), exception);
             return ResponseDto.databaseError();
         }
 
@@ -158,24 +146,23 @@ public class AuthServiceImplement implements AuthService {
 
     @Override
     public ResponseEntity<? super SignInResponseDto> signIn(SignInRequestDto dto) {
-        
+
         String token = null;
 
-        try{
-
+        try {
             String userEmail = dto.getEmail();
             UserEntity userEntity = userRepository.findByEmail(userEmail);
-            if(userEntity == null) return SignInResponseDto.signInFail();
+            if (userEntity == null) return SignInResponseDto.signInFail();
 
             String password = dto.getPassword();
             String encodedPassword = userEntity.getPassword();
             boolean isMatched = passwordEncoder.matches(password, encodedPassword);
-            if(!isMatched) return SignInResponseDto.signInFail();
+            if (!isMatched) return SignInResponseDto.signInFail();
 
             token = jwtProvider.create(userEmail);
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("로그인 실패 - email: {}", dto.getEmail(), exception);
             return ResponseDto.databaseError();
         }
 
@@ -185,10 +172,10 @@ public class AuthServiceImplement implements AuthService {
     @Transactional
     @Override
     public ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(String email) {
-        
+
         UserEntity userEntity = userRepository.findByEmail(email);
 
-        try{
+        try {
             if (userEntity == null) {
                 return DeleteAccountResponseDto.notExistUser();
             }
@@ -197,8 +184,8 @@ public class AuthServiceImplement implements AuthService {
             userEntity.deletedUser();
             userRepository.save(userEntity);
 
-        }catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("회원 탈퇴 실패 - email: {}", email, exception);
             return ResponseDto.databaseError();
         }
         return DeleteAccountResponseDto.success();
@@ -207,19 +194,18 @@ public class AuthServiceImplement implements AuthService {
     @Transactional
     @Override
     public ResponseEntity<? super ChangePasswordResponseDto> changePassword(ChangePasswordRequestDto dto) {
-        try{
-
+        try {
             String email = dto.getEmail();
             String certificationNumber = dto.getCertificationNumber();
-            
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) return ChangePasswordResponseDto.noExistUser();
-            
-            CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
-            if(certificationEntity == null) return ChangePasswordResponseDto.certificationFail();
 
-            boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);           
-            if(!isMatched) return ChangePasswordResponseDto.certificationFail();
+            UserEntity userEntity = userRepository.findByEmail(email);
+            if (userEntity == null) return ChangePasswordResponseDto.noExistUser();
+
+            CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
+            if (certificationEntity == null) return ChangePasswordResponseDto.certificationFail();
+
+            boolean isMatched = certificationEntity.getCertificationNumber().equals(certificationNumber);
+            if (!isMatched) return ChangePasswordResponseDto.certificationFail();
 
             String password = dto.getPassword();
             String encodedPassword = passwordEncoder.encode(password);
@@ -229,14 +215,12 @@ public class AuthServiceImplement implements AuthService {
             userRepository.save(userEntity);
 
             certificationRepository.delete(certificationEntity);
-            //certificationRepository.deleteByEmail(email);
 
-        }catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("비밀번호 변경 실패 - email: {}", dto.getEmail(), exception);
             return ResponseDto.databaseError();
         }
 
         return ChangePasswordResponseDto.success();
     }
-
 }

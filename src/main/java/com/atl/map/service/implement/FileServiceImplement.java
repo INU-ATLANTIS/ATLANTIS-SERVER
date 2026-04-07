@@ -11,6 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.atl.map.service.FileService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class FileServiceImplement implements FileService {
 
@@ -33,7 +36,7 @@ public class FileServiceImplement implements FileService {
         try{
             file.transferTo(new File(savaPath));
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("파일 업로드 실패 - filename: {}", originalFileName, exception);
             return null;
         }
 
@@ -50,7 +53,7 @@ public class FileServiceImplement implements FileService {
             resource = new UrlResource("file:" + filePath + filename);
             
         }catch(Exception exception){
-            exception.printStackTrace();
+            log.error("파일 조회 실패 - filename: {}", filename, exception);
             return null;
         }
 

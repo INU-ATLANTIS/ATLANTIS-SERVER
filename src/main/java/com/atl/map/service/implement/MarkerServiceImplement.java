@@ -35,10 +35,12 @@ import com.atl.map.service.MarkerService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class MarkerServiceImplement implements MarkerService{
+public class MarkerServiceImplement implements MarkerService {
 
     private final UserRepository userRepository;
     private final MarkerRepository markerRepository;
@@ -46,184 +48,188 @@ public class MarkerServiceImplement implements MarkerService{
     private final BuildingRepository buildingRepository;
     private final FloorpicRepository floorpicRepository;
     private final NotificationRepository notificationRepository;
-    
+
     @Override
     public ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId) {
         BuildingEntity buildingEntity = null;
 
-        try{
-
+        try {
             buildingEntity = buildingRepository.findByBuildingId(buildingId);
-           if(buildingEntity == null) return ResponseDto.databaseError();
+            if (buildingEntity == null) return ResponseDto.databaseError();
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("건물 조회 실패 - buildingId: {}", buildingId, exception);
             return ResponseDto.databaseError();
         }
 
         return GetBuildingResponseDto.success(buildingEntity);
     }
+
     @Override
     public ResponseEntity<? super GetBuildingListResponseDto> getBuildingList() {
-        
+
         List<BuildingEntity> buildingEntities = new ArrayList<>();
 
-        try{
-
+        try {
             buildingEntities = buildingRepository.getBuildingList();
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("건물 목록 조회 실패", exception);
             return ResponseDto.databaseError();
         }
 
         return GetBuildingListResponseDto.success(buildingEntities);
     }
-    @Override
-    public ResponseEntity<? super CreateMarkerResponseDto> createMarker(String email,
-            CreateMarkerRequestDto dto) {
-              
-        try{
 
+    @Override
+    public ResponseEntity<? super CreateMarkerResponseDto> createMarker(String email, CreateMarkerRequestDto dto) {
+
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) return CreateMarkerResponseDto.notExistUser();
+            if (userEntity == null) return CreateMarkerResponseDto.notExistUser();
             boolean existedPost = postRepository.existsById(dto.getPostId());
-            if(!existedPost) return CreateMarkerResponseDto.notExistPost();
+            if (!existedPost) return CreateMarkerResponseDto.notExistPost();
             MarkerEntity markerEntity = new MarkerEntity(dto, userEntity.getUserId());
             markerRepository.save(markerEntity);
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("마커 생성 실패 - user: {}", email, exception);
             return ResponseDto.databaseError();
         }
 
         return CreateMarkerResponseDto.success();
     }
-    
+
     @Override
-    public ResponseEntity<? super GetMarkerResponseDto> getMarker(Integer markerId) 
-    {
+    public ResponseEntity<? super GetMarkerResponseDto> getMarker(Integer markerId) {
         MarkerEntity markerEntity = null;
-        try{
+        try {
             markerEntity = markerRepository.findByMarkerId(markerId);
             if (markerEntity == null) return GetMarkerResponseDto.notExistMarker();
             PostEntity postEntity = postRepository.findByPostId(markerEntity.getPostId());
             if (postEntity == null) return GetMarkerResponseDto.notExistPost();
-     
-        }catch(Exception exception){
-            exception.printStackTrace();
+
+        } catch (Exception exception) {
+            log.error("마커 조회 실패 - markerId: {}", markerId, exception);
             return ResponseDto.databaseError();
         }
-   
+
         return GetMarkerResponseDto.success(markerEntity);
     }
+
     @Override
     public ResponseEntity<? super PatchMarekrResponseDto> patchMarker(PatchMarkerRequestDto dto, String email, Integer markerId) {
-    
-        try{
+
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) return PatchMarekrResponseDto.notExistUser();
+            if (userEntity == null) return PatchMarekrResponseDto.notExistUser();
             MarkerEntity markerEntity = markerRepository.findByMarkerId(markerId);
-            if(markerEntity == null) return PatchMarekrResponseDto.notExistMarker();
+            if (markerEntity == null) return PatchMarekrResponseDto.notExistMarker();
             if (!markerEntity.getUserId().equals(userEntity.getUserId())) {
-                return DeleteMarkerResponseDto.noPermission();}
+                return DeleteMarkerResponseDto.noPermission();
+            }
             boolean existedPost = postRepository.existsById(dto.getPostId());
-            if(!existedPost) return PatchMarekrResponseDto.notExistPost();
+            if (!existedPost) return PatchMarekrResponseDto.notExistPost();
 
             markerEntity.patchMarker(dto);
             markerRepository.save(markerEntity);
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("마커 수정 실패 - markerId: {}, user: {}", markerId, email, exception);
             return ResponseDto.databaseError();
         }
 
         return PatchMarekrResponseDto.success();
     }
+
     @Override
     public ResponseEntity<? super DeleteMarkerResponseDto> deleteMarker(Integer markerId, String email) {
-    
-        try{
+
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
             if (userEntity == null) {
-                return DeleteMarkerResponseDto.notExistUser();}
+                return DeleteMarkerResponseDto.notExistUser();
+            }
             MarkerEntity markerEntity = markerRepository.findById(markerId).orElse(null);
             if (markerEntity == null) {
-                return DeleteMarkerResponseDto.notExistMarker();}
+                return DeleteMarkerResponseDto.notExistMarker();
+            }
             if (!markerEntity.getUserId().equals(userEntity.getUserId())) {
-                return DeleteMarkerResponseDto.noPermission();}
-            
+                return DeleteMarkerResponseDto.noPermission();
+            }
+
             notificationRepository.deleteByMarkerId(markerEntity.getMarkerId());
             markerRepository.delete(markerEntity);
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("마커 삭제 실패 - markerId: {}, user: {}", markerId, email, exception);
             return ResponseDto.databaseError();
         }
         return DeleteMarkerResponseDto.success();
     }
+
     @Override
     public ResponseEntity<? super GetTopMarkerResponseDto> getTopMarker() {
-    
+
         List<MarkerEntity> list = new ArrayList<>();
-        try{
+        try {
             LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
             list = markerRepository.findMarkersByLikesSinceDate(beforeWeek);
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("인기 마커 목록 조회 실패", exception);
             return ResponseDto.databaseError();
         }
         return GetTopMarkerResponseDto.success(list);
     }
+
     @Override
     public ResponseEntity<? super GetUserMarkerResponseDto> getUserMarker(String email) {
-        
+
         List<MarkerEntity> list = new ArrayList<>();
-        try{
+        try {
             UserEntity userEntity = userRepository.findByEmail(email);
-            if(userEntity == null) return GetUserMarkerResponseDto.notExistUser();
+            if (userEntity == null) return GetUserMarkerResponseDto.notExistUser();
             list = markerRepository.findByUserId(userEntity.getUserId());
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("사용자 마커 목록 조회 실패 - user: {}", email, exception);
             return ResponseDto.databaseError();
         }
         return GetUserMarkerResponseDto.success(list);
     }
-    
+
     @Override
     public ResponseEntity<? super GetSearchBuildingResponseDto> getSearchBuildingId(String word) {
-        
+
         try {
             List<BuildingEntity> buildings = buildingRepository.findByBuildingCodeContains(word);
             if (buildings.isEmpty()) {
                 buildings = buildingRepository.findByNameContains(word);
             }
-    
-            BuildingEntity firstBuilding = buildings.get(0); // 첫 번째 결과만 사용
+
+            BuildingEntity firstBuilding = buildings.get(0);
             return GetSearchBuildingResponseDto.success(firstBuilding.getBuildingId());
-    
+
         } catch (Exception exception) {
-            exception.printStackTrace();
-            return ResponseDto.databaseError(); // 적절한 오류 처리 응답 반환
+            log.error("건물 검색 실패 - keyword: {}", word, exception);
+            return ResponseDto.databaseError();
         }
     }
-    
+
     @Override
     public ResponseEntity<? super GetBuildingImageResponseDto> getBuildingImage(Integer buildingId) {
-        
+
         List<FloorpicEntity> srcList;
-        try{
+        try {
             srcList = floorpicRepository.findByBuildingId(buildingId);
 
-        }catch(Exception exception){
-            exception.printStackTrace();
+        } catch (Exception exception) {
+            log.error("건물 이미지 조회 실패 - buildingId: {}", buildingId, exception);
             return ResponseDto.databaseError();
         }
 
         return GetBuildingImageResponseDto.success(srcList);
-    
     }
-   
+
     @Transactional
     public void deleteMarkersAndNotificationsByPostId(Integer postId) {
         List<MarkerEntity> markers = markerRepository.findByPostId(postId);

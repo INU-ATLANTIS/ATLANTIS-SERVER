@@ -19,7 +19,9 @@ import com.atl.map.repository.MarkerRepository;
 import com.atl.map.service.NotiService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotiServiceImplement implements NotiService {
@@ -47,7 +49,7 @@ public class NotiServiceImplement implements NotiService {
             return CreateNotificationResponseDto.success(notificationEntity.getNotiId());
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("알림 생성 실패 - email: {}", email, exception);
             return CreateNotificationResponseDto.databaseError();
         }
     }
@@ -72,7 +74,7 @@ public class NotiServiceImplement implements NotiService {
             notificationRepository.delete(notificationEntity);
 
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("알림 삭제 실패 - notiId: {}, email: {}", notiId, email, exception);
             return DeleteNotificationResponseDto.databaseError();
         }
 
@@ -102,7 +104,7 @@ public class NotiServiceImplement implements NotiService {
 
             return PatchNotificationResponseDto.success();
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("알림 수정 실패 - notiId: {}, email: {}", notiId, email, exception);
             return PatchNotificationResponseDto.databaseError();
         }
     }
@@ -116,7 +118,7 @@ public class NotiServiceImplement implements NotiService {
             }
             return GetNotificationResponseDto.success(notificationEntity);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("알림 조회 실패 - notiId: {}", notiId, exception);
             return GetNotificationResponseDto.databaseError();
         }
     }
@@ -134,7 +136,7 @@ public class NotiServiceImplement implements NotiService {
             return GetUserNotificationResponseDto.success(list);
             
         } catch (Exception exception) {
-            exception.printStackTrace();
+            log.error("사용자 알림 목록 조회 실패 - email: {}", email, exception);
             return GetUserNotificationResponseDto.databaseError();
         }
     }
