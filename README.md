@@ -28,9 +28,6 @@
 | ORM | Spring Data JPA (Hibernate) |
 | Database | AWS RDS (MySQL 8.0) |
 | Cloud | AWS EC2 (Ubuntu 22.04 LTS) |
-| File Storage | AWS S3 |
-| Message Queue | AWS SQS |
-| Push Notification | Firebase Cloud Messaging (FCM) |
 | API Docs | Swagger (SpringDoc OpenAPI 3) |
 | Build Tool | Gradle |
 
