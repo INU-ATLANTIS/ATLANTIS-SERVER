@@ -14,22 +14,17 @@ import com.atl.map.repository.resultSet.GetCommentListResultSet;
 import lombok.Getter;
 
 @Getter
-public class GetCommentListResponseDto extends ResponseDto{
-    
+public class GetCommentListResponseDto extends ResponseDto {
+
     private List<CommentListItem> commentList;
 
-    private GetCommentListResponseDto(List<GetCommentListResultSet> resultSets){
+    private GetCommentListResponseDto(List<GetCommentListResultSet> resultSets) {
         super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
         this.commentList = CommentListItem.copyList(resultSets);
     }
 
-    public static ResponseEntity<GetCommentListResponseDto> success(List<GetCommentListResultSet> resultSets){
+    public static ResponseEntity<GetCommentListResponseDto> success(List<GetCommentListResultSet> resultSets) {
         GetCommentListResponseDto result = new GetCommentListResponseDto(resultSets);
         return ResponseEntity.status(HttpStatus.OK).body(result);
-    }
-
-    public static ResponseEntity<ResponseDto> notExistPost(){
-        ResponseDto responseBody = new ResponseDto(ResponseCode.NOT_EXISTED_POST, ResponseMessage.NOT_EXISTED_POST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 }

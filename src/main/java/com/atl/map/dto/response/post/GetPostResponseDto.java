@@ -12,7 +12,6 @@ import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.entity.ImageEntity;
 import com.atl.map.repository.resultSet.GetPostResultSet;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,26 +20,25 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class GetPostResponseDto extends ResponseDto {
+
     private Integer postId;
     private String title;
     private String content;
-    private List<String> postImageList; // 이미지 리스트는 null일 수도 있
+    private List<String> postImageList;
     private String writeDatetime;
     private Integer writerUserId;
-    private String writerNickname; // 작성자 닉네임은 null일 수도 있습니다.
-    private String writerProfileImage; // 작성자 프로필 이미지 URL은 null일 수도 있습니다.
+    private String writerNickname;
+    private String writerProfileImage;
     private Integer buildingId;
     private int likeCount;
     private int commentCount;
 
     public GetPostResponseDto(GetPostResultSet resultSet, List<ImageEntity> imageEntities) {
         super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
-        
+
         List<String> postImageList = new ArrayList<>();
-        for(ImageEntity imageEntity: imageEntities){
-            String postImage = imageEntity.getImage();
-            postImageList.add(postImage);
-            
+        for (ImageEntity imageEntity : imageEntities) {
+            postImageList.add(imageEntity.getImage());
         }
         this.postId = resultSet.getPostId();
         this.title = resultSet.getTitle();
@@ -55,13 +53,8 @@ public class GetPostResponseDto extends ResponseDto {
         this.commentCount = resultSet.getCommentCount();
     }
 
-    public static ResponseEntity<GetPostResponseDto> success(GetPostResultSet resultSet, List<ImageEntity> imageEntities){
+    public static ResponseEntity<GetPostResponseDto> success(GetPostResultSet resultSet, List<ImageEntity> imageEntities) {
         GetPostResponseDto responseBody = new GetPostResponseDto(resultSet, imageEntities);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
-    }
-
-    public static ResponseEntity<ResponseDto> notExistPost(){
-        ResponseDto responseBody = new ResponseDto(ResponseCode.NOT_EXISTED_POST, ResponseMessage.NOT_EXISTED_POST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 }
