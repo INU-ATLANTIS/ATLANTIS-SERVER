@@ -13,11 +13,11 @@ import com.atl.map.entity.PostListViewEntity;
 @Repository
 public interface PostListViewRepository extends JpaRepository<PostListViewEntity, Integer> {
     
-    Page<PostListViewEntity> findByOrderByWriteDatetimeDesc(Pageable pageable);
+    Page<PostListViewEntity> findByOrderByWriteDatetimeDescPostIdDesc(Pageable pageable);
     List<PostListViewEntity> findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(LocalDateTime writeDatetime);
-    Page<PostListViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(
+    Page<PostListViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDescPostIdDesc(
             String title, String content, Pageable pageable);
-    Page<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDesc(int buildingId, Pageable pageable);
+    Page<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDescPostIdDesc(int buildingId, Pageable pageable);
     List<PostListViewEntity> findByUserIdOrderByWriteDatetimeDesc(int userId);
     
     @Query("SELECT p FROM postList p WHERE p.postId IN :ids")
