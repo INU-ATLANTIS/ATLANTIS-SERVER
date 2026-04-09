@@ -20,10 +20,6 @@ public interface PostListViewRepository extends JpaRepository<PostListViewEntity
     Page<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDescPostIdDesc(int buildingId, Pageable pageable);
     List<PostListViewEntity> findByUserIdOrderByWriteDatetimeDesc(int userId);
     
-    @Query("SELECT p FROM postList p JOIN favortie f ON p.postId = f.postId " +
-            "WHERE f.userId = :userId ORDER BY p.writeDatetime DESC, p.postId DESC")
-    List<PostListViewEntity> findLikedPostsByUserId(Integer userId);
-    
     @Query("SELECT p FROM postList p WHERE p.postId IN :ids")
     List<PostListViewEntity> findAllByPostIds(List<Integer> ids);
 

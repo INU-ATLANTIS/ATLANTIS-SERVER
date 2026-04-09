@@ -3,6 +3,8 @@ package com.atl.map.service.implement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -285,8 +287,11 @@ public class PostServiceImplement implements PostService {
         UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-        List<PostListViewEntity> postListViewEntities =
-                postListViewRepository.findLikedPostsByUserId(userEntity.getUserId());
+        List<FavoriteEntity> favorites = favoriteRepository.findByUserId(userEntity.getUserId());
+        List<Integer> postIds = favorites.stream()
+                .map(FavoriteEntity::getPostId)
+                .collect(Collectors.toList());
+        List<PostListViewEntity> postListViewEntities = postListViewRepository.findAllById(postIds);
 
         return GetMyLikePostResponseDto.success(postListViewEntities);
     }
