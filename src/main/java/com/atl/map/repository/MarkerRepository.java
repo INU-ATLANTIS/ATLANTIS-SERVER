@@ -17,6 +17,8 @@ public interface MarkerRepository extends JpaRepository<MarkerEntity, Integer>{
     @Query(value = "SELECT m FROM marker m JOIN post p ON m.postId = p.postId WHERE COALESCE(p.updateDate, p.createDate) > :sinceDate ORDER BY p.likeCount DESC")
     List<MarkerEntity> findMarkersByLikesSinceDate(LocalDateTime sinceDate);
     List<MarkerEntity> findByUserId(int userId);
+    @Query("SELECT m.markerId FROM marker m WHERE m.postId = :postId")
+    List<Integer> findMarkerIdsByPostId(Integer postId);
     void deleteByPostId(Integer postId);
     List<MarkerEntity> findByPostId(Integer postId);
 
