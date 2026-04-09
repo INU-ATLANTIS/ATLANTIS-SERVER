@@ -12,15 +12,35 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.atl.map.dto.request.post.*;
-import com.atl.map.dto.response.ResponseDto;
-import com.atl.map.dto.response.post.*;
+import com.atl.map.dto.request.post.CreatePostRequestDto;
+import com.atl.map.dto.request.post.PatchPostRequestDto;
+import com.atl.map.dto.request.post.PostChildCommentRequestDto;
+import com.atl.map.dto.request.post.PostCommentRequestDto;
+import com.atl.map.dto.response.post.CreatePostResponseDto;
+import com.atl.map.dto.response.post.DeleteCommentResponseDto;
+import com.atl.map.dto.response.post.DeletePostResponseDto;
+import com.atl.map.dto.response.post.GetBuildingPostListResponseDto;
+import com.atl.map.dto.response.post.GetChildCommentListResponseDto;
+import com.atl.map.dto.response.post.GetCommentListResponseDto;
+import com.atl.map.dto.response.post.GetLatestPostResponseDto;
+import com.atl.map.dto.response.post.GetMyCommentListResponseDto;
+import com.atl.map.dto.response.post.GetMyLikePostResponseDto;
+import com.atl.map.dto.response.post.GetMyPostResponseDto;
+import com.atl.map.dto.response.post.GetPostResponseDto;
+import com.atl.map.dto.response.post.GetSearchPostListResponseDto;
+import com.atl.map.dto.response.post.GetTopPostListResponseDto;
+import com.atl.map.dto.response.post.PatchPostResponseDto;
+import com.atl.map.dto.response.post.PostChildCommentResponseDto;
+import com.atl.map.dto.response.post.PostCommentResponseDto;
+import com.atl.map.dto.response.post.PutFavoriteResponseDto;
 import com.atl.map.entity.CommentEntity;
 import com.atl.map.entity.FavoriteEntity;
 import com.atl.map.entity.ImageEntity;
 import com.atl.map.entity.PostEntity;
 import com.atl.map.entity.PostListViewEntity;
 import com.atl.map.entity.UserEntity;
+import com.atl.map.exception.BusinessException;
+import com.atl.map.exception.ErrorCode;
 import com.atl.map.repository.CommentRepository;
 import com.atl.map.repository.FavoriteRepository;
 import com.atl.map.repository.ImageRepository;
@@ -51,33 +71,20 @@ public class PostServiceImplement implements PostService {
     @Transactional
     @Override
     public ResponseEntity<? super CreatePostResponseDto> createPost(CreatePostRequestDto dto, String email) {
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (userEntity.getReportedCount() > 10) throw new BusinessException(ErrorCode.REPORTED_USER);
 
-        PostEntity postEntity = null;
+        PostEntity postEntity = new PostEntity(dto, userEntity.getUserId());
+        postRepository.save(postEntity);
 
-        try {
-            boolean existedEmail = userRepository.existsByEmail(email);
-            if (!existedEmail) return CreatePostResponseDto.notExistUser();
-
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity.getReportedCount() > 10) return CreatePostResponseDto.reportedUser();
-
-            postEntity = new PostEntity(dto, userEntity.getUserId());
-            postRepository.save(postEntity);
-
-            int postId = postEntity.getPostId();
-            List<String> postImageList = dto.getImageList();
+        List<String> postImageList = dto.getImageList();
+        if (postImageList != null) {
             List<ImageEntity> imageEntities = new ArrayList<>();
-            if (postImageList != null) {
-                for (String image : postImageList) {
-                    ImageEntity imageEntity = new ImageEntity(postId, image);
-                    imageEntities.add(imageEntity);
-                }
-                imageRepository.saveAll(imageEntities);
+            for (String image : postImageList) {
+                imageEntities.add(new ImageEntity(postEntity.getPostId(), image));
             }
-
-        } catch (Exception exception) {
-            log.error("게시물 작성 실패 - user: {}", email, exception);
-            return ResponseDto.databaseError();
+            imageRepository.saveAll(imageEntities);
         }
 
         return CreatePostResponseDto.success(postEntity.getPostId());
@@ -85,106 +92,70 @@ public class PostServiceImplement implements PostService {
 
     @Override
     public ResponseEntity<? super GetPostResponseDto> getPost(Integer postId) {
+        GetPostResultSet resultSet = postRepository.getPost(postId);
+        if (resultSet == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-        GetPostResultSet resultSet = null;
-        List<ImageEntity> imageEntities = new ArrayList<>();
-        try {
-            resultSet = postRepository.getPost(postId);
-            if (resultSet == null) return GetPostResponseDto.notExistPost();
-            imageEntities = imageRepository.findByPostId(postId);
-
-        } catch (Exception exception) {
-            log.error("게시물 조회 실패 - postId: {}", postId, exception);
-            return ResponseDto.databaseError();
-        }
-
+        List<ImageEntity> imageEntities = imageRepository.findByPostId(postId);
         return GetPostResponseDto.success(resultSet, imageEntities);
     }
 
     @Override
     public ResponseEntity<? super PutFavoriteResponseDto> putFavorite(Integer postId, String email) {
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-        try {
-            boolean existedEmail = userRepository.existsByEmail(email);
-            if (!existedEmail) return PutFavoriteResponseDto.notExistUser();
+        PostEntity postEntity = postRepository.findByPostId(postId);
+        if (postEntity == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-            PostEntity postEntity = postRepository.findByPostId(postId);
-            if (postEntity == null) return PutFavoriteResponseDto.noExistPost();
-
-            Integer userId = userRepository.findByEmail(email).getUserId();
-            FavoriteEntity favoriteEntity = favoriteRepository.findByPostIdAndUserId(postId, userId);
-            if (favoriteEntity == null) {
-                favoriteEntity = new FavoriteEntity(userId, postId);
-                favoriteRepository.save(favoriteEntity);
-                postEntity.increaseLikeCount();
-            } else {
-                favoriteRepository.delete(favoriteEntity);
-                postEntity.decreaseLikeCount();
-            }
-
-            postRepository.save(postEntity);
-
-        } catch (Exception exception) {
-            log.error("게시물 좋아요 처리 실패 - postId: {}, user: {}", postId, email, exception);
-            return ResponseDto.databaseError();
+        FavoriteEntity favoriteEntity = favoriteRepository.findByPostIdAndUserId(postId, userEntity.getUserId());
+        if (favoriteEntity == null) {
+            favoriteRepository.save(new FavoriteEntity(userEntity.getUserId(), postId));
+            postEntity.increaseLikeCount();
+        } else {
+            favoriteRepository.delete(favoriteEntity);
+            postEntity.decreaseLikeCount();
         }
+        postRepository.save(postEntity);
 
         return PutFavoriteResponseDto.success();
     }
 
     @Override
     public ResponseEntity<? super PostCommentResponseDto> postComment(PostCommentRequestDto dto, Integer postId, String email) {
+        PostEntity postEntity = postRepository.findByPostId(postId);
+        if (postEntity == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-        try {
-            PostEntity postEntity = postRepository.findByPostId(postId);
-            if (postEntity == null) return PostCommentResponseDto.notExistPost();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (userEntity.getReportedCount() > 10) throw new BusinessException(ErrorCode.REPORTED_USER);
 
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return PostCommentResponseDto.notExistUser();
-            if (userEntity.getReportedCount() > 10) return PostCommentResponseDto.reportedUser();
-
-            CommentEntity commentEntity = new CommentEntity(dto, postId, userEntity.getUserId());
-            commentRepository.save(commentEntity);
-            postEntity.increaseCommentCount();
-            postRepository.save(postEntity);
-
-        } catch (Exception exception) {
-            log.error("댓글 작성 실패 - postId: {}, user: {}", postId, email, exception);
-            return ResponseDto.databaseError();
-        }
+        CommentEntity commentEntity = new CommentEntity(dto, postId, userEntity.getUserId());
+        commentRepository.save(commentEntity);
+        postEntity.increaseCommentCount();
+        postRepository.save(postEntity);
 
         return PostCommentResponseDto.success();
     }
 
     @Override
     public ResponseEntity<? super PatchPostResponseDto> patchPost(PatchPostRequestDto dto, Integer postId, String email) {
-        try {
-            PostEntity postEntity = postRepository.findByPostId(postId);
-            if (postEntity == null) return PatchPostResponseDto.notExistPost();
+        PostEntity postEntity = postRepository.findByPostId(postId);
+        if (postEntity == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return PatchPostResponseDto.notExistUser();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (postEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
 
-            Integer writerInteger = postEntity.getUserId();
-            if (writerInteger != userEntity.getUserId()) return PatchPostResponseDto.noPermisson();
+        postEntity.patchPost(dto);
+        postRepository.save(postEntity);
 
-            postEntity.patchPost(dto);
-            postRepository.save(postEntity);
-
-            if (dto.getImageList() != null) {
-                imageRepository.deleteById(postId);
-                List<String> imageList = dto.getImageList();
-                List<ImageEntity> imageEntities = new ArrayList<>();
-
-                for (String image : imageList) {
-                    ImageEntity imageEntity = new ImageEntity(postId, image);
-                    imageEntities.add(imageEntity);
-                }
-                imageRepository.saveAll(imageEntities);
+        if (dto.getImageList() != null) {
+            imageRepository.deleteById(postId);
+            List<ImageEntity> imageEntities = new ArrayList<>();
+            for (String image : dto.getImageList()) {
+                imageEntities.add(new ImageEntity(postId, image));
             }
-        } catch (Exception exception) {
-            log.error("게시물 수정 실패 - postId: {}, user: {}", postId, email, exception);
-            return ResponseDto.databaseError();
+            imageRepository.saveAll(imageEntities);
         }
 
         return PatchPostResponseDto.success();
@@ -193,188 +164,110 @@ public class PostServiceImplement implements PostService {
     @Override
     @Transactional
     public ResponseEntity<? super DeletePostResponseDto> deletePost(Integer postId, String email) {
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-        try {
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return DeletePostResponseDto.notExistUser();
+        PostEntity postEntity = postRepository.findByPostId(postId);
+        if (postEntity == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        if (postEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
 
-            PostEntity postEntity = postRepository.findByPostId(postId);
-            if (postEntity == null) return DeletePostResponseDto.notExistPost();
+        imageRepository.deleteByPostId(postId);
+        commentRepository.deleteByPostId(postId);
+        favoriteRepository.deleteByPostId(postId);
+        markerService.deleteMarkersAndNotificationsByPostId(postId);
+        postRepository.delete(postEntity);
 
-            if (postEntity.getUserId() != userEntity.getUserId()) return DeletePostResponseDto.noPermisson();
-
-            imageRepository.deleteByPostId(postId);
-            commentRepository.deleteByPostId(postId);
-            favoriteRepository.deleteByPostId(postId);
-            markerService.deleteMarkersAndNotificationsByPostId(postId);
-            postRepository.delete(postEntity);
-
-        } catch (Exception exception) {
-            log.error("게시물 삭제 실패 - postId: {}, user: {}", postId, email, exception);
-            return ResponseDto.databaseError();
-        }
         return DeletePostResponseDto.success();
     }
 
     @Override
     public ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList(int page, int size) {
-
-        try {
-            Page<PostListViewEntity> postPage =
-                    postListViewRepository.findByOrderByWriteDatetimeDescPostIdDesc(createPageable(page, size));
-            return GetLatestPostResponseDto.success(postPage);
-
-        } catch (Exception exception) {
-            log.error("최신 게시물 목록 조회 실패 - page: {}, size: {}", page, size, exception);
-            return ResponseDto.databaseError();
-        }
+        Page<PostListViewEntity> postPage =
+                postListViewRepository.findByOrderByWriteDatetimeDescPostIdDesc(createPageable(page, size));
+        return GetLatestPostResponseDto.success(postPage);
     }
 
     @Override
     public ResponseEntity<? super GetTopPostListResponseDto> getTopPostList() {
-
-        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
-
-        try {
-            LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
-            postListViewEntities = postListViewRepository.findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(beforeWeek);
-
-        } catch (Exception exception) {
-            log.error("인기 게시물 목록 조회 실패", exception);
-            return ResponseDto.databaseError();
-        }
-
+        LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
+        List<PostListViewEntity> postListViewEntities =
+                postListViewRepository.findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(beforeWeek);
         return GetTopPostListResponseDto.success(postListViewEntities);
     }
 
     @Override
     public ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord, int page, int size) {
-
-        try {
-            Page<PostListViewEntity> postPage = postListViewRepository
-                    .findByTitleContainsOrContentContainsOrderByWriteDatetimeDescPostIdDesc(
-                            searchWord, searchWord, createPageable(page, size));
-            return GetSearchPostListResponseDto.success(postPage);
-
-        } catch (Exception exception) {
-            log.error("게시물 검색 실패 - keyword: {}, page: {}, size: {}", searchWord, page, size, exception);
-            return ResponseDto.databaseError();
-        }
+        Page<PostListViewEntity> postPage = postListViewRepository
+                .findByTitleContainsOrContentContainsOrderByWriteDatetimeDescPostIdDesc(
+                        searchWord, searchWord, createPageable(page, size));
+        return GetSearchPostListResponseDto.success(postPage);
     }
 
     @Override
     public ResponseEntity<? super GetCommentListResponseDto> getCommentList(Integer postId) {
+        if (!postRepository.existsById(postId)) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-        List<GetCommentListResultSet> resultSets = new ArrayList<>();
-        try {
-            boolean existedPost = postRepository.existsById(postId);
-            if (!existedPost) return GetCommentListResponseDto.notExistPost();
-
-            resultSets = commentRepository.getCommentList(postId);
-
-        } catch (Exception exception) {
-            log.error("댓글 목록 조회 실패 - postId: {}", postId, exception);
-            return ResponseDto.databaseError();
-        }
-
+        List<GetCommentListResultSet> resultSets = commentRepository.getCommentList(postId);
         return GetCommentListResponseDto.success(resultSets);
     }
 
     @Override
     public ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId, int page, int size) {
-        try {
-            Page<PostListViewEntity> postPage =
-                    postListViewRepository.findByBuildingIdOrderByWriteDatetimeDescPostIdDesc(buildingId, createPageable(page, size));
-            return GetBuildingPostListResponseDto.success(postPage);
-
-        } catch (Exception exception) {
-            log.error("건물별 게시물 목록 조회 실패 - buildingId: {}, page: {}, size: {}", buildingId, page, size, exception);
-            return ResponseDto.databaseError();
-        }
+        Page<PostListViewEntity> postPage =
+                postListViewRepository.findByBuildingIdOrderByWriteDatetimeDescPostIdDesc(buildingId, createPageable(page, size));
+        return GetBuildingPostListResponseDto.success(postPage);
     }
 
     @Override
     public ResponseEntity<? super GetChildCommentListResponseDto> getChildCommentList(Integer parentId) {
+        if (!commentRepository.existsById(parentId)) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
 
-        List<GetCommentListResultSet> resultSets = new ArrayList<>();
-        try {
-            boolean existedComment = commentRepository.existsById(parentId);
-            if (!existedComment) return GetChildCommentListResponseDto.notExistComment();
-
-            resultSets = commentRepository.getChildCommentList(parentId);
-
-        } catch (Exception exception) {
-            log.error("대댓글 목록 조회 실패 - parentId: {}", parentId, exception);
-            return ResponseDto.databaseError();
-        }
-
+        List<GetCommentListResultSet> resultSets = commentRepository.getChildCommentList(parentId);
         return GetChildCommentListResponseDto.success(resultSets);
     }
 
     @Override
     public ResponseEntity<? super PostChildCommentResponseDto> postChildComment(PostChildCommentRequestDto dto, String email, Integer postId, Integer commentId) {
+        PostEntity postEntity = postRepository.findByPostId(postId);
+        if (postEntity == null) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
 
-        try {
-            PostEntity postEntity = postRepository.findByPostId(postId);
-            if (postEntity == null) return PostChildCommentResponseDto.notExistPost();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (userEntity.getReportedCount() > 10) throw new BusinessException(ErrorCode.REPORTED_USER);
 
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return PostChildCommentResponseDto.notExistUser();
-            if (userEntity.getReportedCount() > 10) return PostChildCommentResponseDto.reportedUser();
-
-            CommentEntity commentEntity = new CommentEntity(dto, postId, commentId, userEntity.getUserId());
-            commentRepository.save(commentEntity);
-            postEntity.increaseCommentCount();
-            postRepository.save(postEntity);
-
-        } catch (Exception exception) {
-            log.error("대댓글 작성 실패 - postId: {}, user: {}", postId, email, exception);
-            return ResponseDto.databaseError();
-        }
+        CommentEntity commentEntity = new CommentEntity(dto, postId, commentId, userEntity.getUserId());
+        commentRepository.save(commentEntity);
+        postEntity.increaseCommentCount();
+        postRepository.save(postEntity);
 
         return PostChildCommentResponseDto.success();
     }
 
     @Override
     public ResponseEntity<? super GetMyPostResponseDto> getUserPostList(String email) {
-        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
-        try {
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return GetMyPostResponseDto.notExistUser();
-            postListViewEntities = postListViewRepository.findByUserIdOrderByWriteDatetimeDesc(userEntity.getUserId());
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-        } catch (Exception exception) {
-            log.error("내 게시물 목록 조회 실패 - user: {}", email, exception);
-            return ResponseDto.databaseError();
-        }
-
+        List<PostListViewEntity> postListViewEntities =
+                postListViewRepository.findByUserIdOrderByWriteDatetimeDesc(userEntity.getUserId());
         return GetMyPostResponseDto.success(postListViewEntities);
     }
 
     @Override
     public ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId) {
-        try {
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return DeletePostResponseDto.notExistUser();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-            CommentEntity commentEntity = commentRepository.findByCommentId(commentId);
-            if (commentEntity == null) return DeleteCommentResponseDto.notExistComment();
+        CommentEntity commentEntity = commentRepository.findByCommentId(commentId);
+        if (commentEntity == null) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+        if (commentEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
 
-            if (commentEntity.getUserId() != userEntity.getUserId()) return DeleteCommentResponseDto.noPermisson();
+        PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
+        int deletedCommentsCount = deleteChildComments(commentId);
+        commentRepository.delete(commentEntity);
+        postEntity.decreaseCommentCount(deletedCommentsCount + 1);
+        postRepository.save(postEntity);
 
-            PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
-
-            int deletedCommentsCount = deleteChildComments(commentId);
-
-            commentRepository.delete(commentEntity);
-
-            postEntity.decreaseCommentCount(deletedCommentsCount + 1);
-
-            postRepository.save(postEntity);
-        } catch (Exception exception) {
-            log.error("댓글 삭제 실패 - commentId: {}, user: {}", commentId, email, exception);
-            return ResponseDto.databaseError();
-        }
         return DeleteCommentResponseDto.success();
     }
 
@@ -391,38 +284,25 @@ public class PostServiceImplement implements PostService {
 
     @Override
     public ResponseEntity<? super GetMyLikePostResponseDto> getUserLikePostList(String email) {
-        try {
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return GetMyLikePostResponseDto.notExistUser();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-            List<FavoriteEntity> favorites = favoriteRepository.findByUserId(userEntity.getUserId());
-            List<Integer> postIds = favorites.stream()
-                    .map(FavoriteEntity::getPostId)
-                    .collect(Collectors.toList());
+        List<FavoriteEntity> favorites = favoriteRepository.findByUserId(userEntity.getUserId());
+        List<Integer> postIds = favorites.stream()
+                .map(FavoriteEntity::getPostId)
+                .collect(Collectors.toList());
+        List<PostListViewEntity> postListViewEntities = postListViewRepository.findAllById(postIds);
 
-            List<PostListViewEntity> postListViewEntities = postListViewRepository.findAllById(postIds);
-
-            return GetMyLikePostResponseDto.success(postListViewEntities);
-        } catch (Exception exception) {
-            log.error("좋아요한 게시물 목록 조회 실패 - user: {}", email, exception);
-            return ResponseDto.databaseError();
-        }
+        return GetMyLikePostResponseDto.success(postListViewEntities);
     }
 
     @Override
     public ResponseEntity<? super GetMyCommentListResponseDto> getMyComment(String email) {
-        try {
-            UserEntity userEntity = userRepository.findByEmail(email);
-            if (userEntity == null) return GetMyCommentListResponseDto.notExistUser();
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-            List<CommentEntity> list = commentRepository.findByUserId(userEntity.getUserId());
-
-            return GetMyCommentListResponseDto.success(list);
-
-        } catch (Exception exception) {
-            log.error("내 댓글 목록 조회 실패 - user: {}", email, exception);
-            return ResponseDto.databaseError();
-        }
+        List<CommentEntity> list = commentRepository.findByUserId(userEntity.getUserId());
+        return GetMyCommentListResponseDto.success(list);
     }
 
     private Pageable createPageable(int page, int size) {
