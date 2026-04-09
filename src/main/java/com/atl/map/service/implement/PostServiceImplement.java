@@ -24,7 +24,6 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.CommentRepository;
 import com.atl.map.repository.FavoriteRepository;
 import com.atl.map.repository.ImageRepository;
-import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.PostListViewRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
@@ -222,7 +221,7 @@ public class PostServiceImplement implements PostService {
 
         try {
             Page<PostListViewEntity> postPage =
-                    postListViewRepository.findByOrderByWriteDatetimeDesc(createPageable(page, size));
+                    postListViewRepository.findByOrderByWriteDatetimeDescPostIdDesc(createPageable(page, size));
             return GetLatestPostResponseDto.success(postPage);
 
         } catch (Exception exception) {
@@ -253,7 +252,7 @@ public class PostServiceImplement implements PostService {
 
         try {
             Page<PostListViewEntity> postPage = postListViewRepository
-                    .findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(
+                    .findByTitleContainsOrContentContainsOrderByWriteDatetimeDescPostIdDesc(
                             searchWord, searchWord, createPageable(page, size));
             return GetSearchPostListResponseDto.success(postPage);
 
@@ -285,7 +284,7 @@ public class PostServiceImplement implements PostService {
     public ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId, int page, int size) {
         try {
             Page<PostListViewEntity> postPage =
-                    postListViewRepository.findByBuildingIdOrderByWriteDatetimeDesc(buildingId, createPageable(page, size));
+                    postListViewRepository.findByBuildingIdOrderByWriteDatetimeDescPostIdDesc(buildingId, createPageable(page, size));
             return GetBuildingPostListResponseDto.success(postPage);
 
         } catch (Exception exception) {
