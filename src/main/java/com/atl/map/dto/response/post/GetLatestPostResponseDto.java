@@ -2,6 +2,7 @@ package com.atl.map.dto.response.post;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -14,16 +15,27 @@ import com.atl.map.entity.PostListViewEntity;
 import lombok.Getter;
 
 @Getter
-public class GetLatestPostResponseDto extends ResponseDto{
-    
+public class GetLatestPostResponseDto extends ResponseDto {
+
     private List<PostListItem> latestList;
-    private GetLatestPostResponseDto(List<PostListViewEntity> postEntities){
+    private int page;
+    private int size;
+    private int totalPages;
+    private long totalElements;
+    private boolean hasNext;
+
+    private GetLatestPostResponseDto(Page<PostListViewEntity> postPage) {
         super(ResponseCode.SUCCESS, ResponseMessage.SUCCESS);
-        this.latestList = PostListItem.getList(postEntities);
+        this.latestList = PostListItem.getList(postPage.getContent());
+        this.page = postPage.getNumber();
+        this.size = postPage.getSize();
+        this.totalPages = postPage.getTotalPages();
+        this.totalElements = postPage.getTotalElements();
+        this.hasNext = postPage.hasNext();
     }
 
-    public static ResponseEntity<GetLatestPostResponseDto> success(List<PostListViewEntity> postEntities){
-        GetLatestPostResponseDto result = new GetLatestPostResponseDto(postEntities);
+    public static ResponseEntity<GetLatestPostResponseDto> success(Page<PostListViewEntity> postPage) {
+        GetLatestPostResponseDto result = new GetLatestPostResponseDto(postPage);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

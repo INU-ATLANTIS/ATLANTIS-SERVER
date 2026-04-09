@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.atl.map.dto.response.post.*;
 import com.atl.map.dto.request.post.*;
@@ -97,8 +98,11 @@ public class PostController {
     }
 
     @GetMapping("/latest-list")
-    public ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList(){
-        ResponseEntity<? super GetLatestPostResponseDto> response = postService.getLatestPostList();
+    public ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ){
+        ResponseEntity<? super GetLatestPostResponseDto> response = postService.getLatestPostList(page, size);
         return response;
     }
 
@@ -110,9 +114,11 @@ public class PostController {
 
     @GetMapping("/search-list/{searchword}")
     public ResponseEntity<? super GetSearchPostListResponseDto> getSearchPost(
-        @PathVariable("searchword") String searchWord
+        @PathVariable("searchword") String searchWord,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
     ){
-        ResponseEntity<? super GetSearchPostListResponseDto> response = postService.getSearchPostList(searchWord);
+        ResponseEntity<? super GetSearchPostListResponseDto> response = postService.getSearchPostList(searchWord, page, size);
         return response;
     }
 
@@ -127,9 +133,11 @@ public class PostController {
 
     @GetMapping("/building/{buildingid}")
     public ResponseEntity<? super GetBuildingPostListResponseDto> GetbuildingPostList(
-        @PathVariable("buildingid") Integer buildingId
+        @PathVariable("buildingid") Integer buildingId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
     ){
-        ResponseEntity<? super GetBuildingPostListResponseDto> response = postService.getBuildingPostList(buildingId);
+        ResponseEntity<? super GetBuildingPostListResponseDto> response = postService.getBuildingPostList(buildingId, page, size);
         return response;
     }
 

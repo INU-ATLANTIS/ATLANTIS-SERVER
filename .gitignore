@@ -47,3 +47,8 @@ IMPROVEMENT_GUIDE.md
 
 # Claude memory 
 .claude/memory/*
+
+# Problem solving logs (personal learning)
+problem-logs/*
+
+perf-guides/*

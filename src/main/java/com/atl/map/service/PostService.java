@@ -12,10 +12,10 @@ public interface PostService {
     ResponseEntity<? super PatchPostResponseDto> patchPost(PatchPostRequestDto dto, Integer postId, String email);
     ResponseEntity<? super DeletePostResponseDto> deletePost(Integer postId, String email);
 
-    ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList();
+    ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList(int page, int size);
     ResponseEntity<? super GetTopPostListResponseDto> getTopPostList();
-    ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord);
-    ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId);
+    ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord, int page, int size);
+    ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId, int page, int size);
     ResponseEntity<? super GetMyPostResponseDto> getUserPostList(String email);
     ResponseEntity<? super GetMyLikePostResponseDto> getUserLikePostList(String email);
 
