@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -215,17 +218,17 @@ public class PostServiceImplement implements PostService {
     }
 
     @Override
-    public ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList() {
+    public ResponseEntity<? super GetLatestPostResponseDto> getLatestPostList(int page, int size) {
 
-        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
         try {
-            postListViewEntities = postListViewRepository.findByOrderByWriteDatetimeDesc();
+            Page<PostListViewEntity> postPage =
+                    postListViewRepository.findByOrderByWriteDatetimeDesc(createPageable(page, size));
+            return GetLatestPostResponseDto.success(postPage);
 
         } catch (Exception exception) {
-            log.error("최신 게시물 목록 조회 실패", exception);
+            log.error("최신 게시물 목록 조회 실패 - page: {}, size: {}", page, size, exception);
             return ResponseDto.databaseError();
         }
-        return GetLatestPostResponseDto.success(postListViewEntities);
     }
 
     @Override
@@ -246,18 +249,18 @@ public class PostServiceImplement implements PostService {
     }
 
     @Override
-    public ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord) {
+    public ResponseEntity<? super GetSearchPostListResponseDto> getSearchPostList(String searchWord, int page, int size) {
 
-        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
         try {
-            postListViewEntities = postListViewRepository.findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(searchWord, searchWord);
+            Page<PostListViewEntity> postPage = postListViewRepository
+                    .findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(
+                            searchWord, searchWord, createPageable(page, size));
+            return GetSearchPostListResponseDto.success(postPage);
 
         } catch (Exception exception) {
-            log.error("게시물 검색 실패 - keyword: {}", searchWord, exception);
+            log.error("게시물 검색 실패 - keyword: {}, page: {}, size: {}", searchWord, page, size, exception);
             return ResponseDto.databaseError();
         }
-
-        return GetSearchPostListResponseDto.success(postListViewEntities);
     }
 
     @Override
@@ -279,17 +282,16 @@ public class PostServiceImplement implements PostService {
     }
 
     @Override
-    public ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId) {
-        List<PostListViewEntity> postListViewEntities = new ArrayList<>();
+    public ResponseEntity<? super GetBuildingPostListResponseDto> getBuildingPostList(Integer buildingId, int page, int size) {
         try {
-            postListViewEntities = postListViewRepository.findByBuildingIdOrderByWriteDatetimeDesc(buildingId);
+            Page<PostListViewEntity> postPage =
+                    postListViewRepository.findByBuildingIdOrderByWriteDatetimeDesc(buildingId, createPageable(page, size));
+            return GetBuildingPostListResponseDto.success(postPage);
 
         } catch (Exception exception) {
-            log.error("건물별 게시물 목록 조회 실패 - buildingId: {}", buildingId, exception);
+            log.error("건물별 게시물 목록 조회 실패 - buildingId: {}, page: {}, size: {}", buildingId, page, size, exception);
             return ResponseDto.databaseError();
         }
-
-        return GetBuildingPostListResponseDto.success(postListViewEntities);
     }
 
     @Override
@@ -422,5 +424,11 @@ public class PostServiceImplement implements PostService {
             log.error("내 댓글 목록 조회 실패 - user: {}", email, exception);
             return ResponseDto.databaseError();
         }
+    }
+
+    private Pageable createPageable(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        return PageRequest.of(safePage, safeSize);
     }
 }

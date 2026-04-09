@@ -2,6 +2,9 @@ package com.atl.map.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,10 +13,11 @@ import com.atl.map.entity.PostListViewEntity;
 @Repository
 public interface PostListViewRepository extends JpaRepository<PostListViewEntity, Integer> {
     
-    List<PostListViewEntity> findByOrderByWriteDatetimeDesc();
+    Page<PostListViewEntity> findByOrderByWriteDatetimeDesc(Pageable pageable);
     List<PostListViewEntity> findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(LocalDateTime writeDatetime);
-    List<PostListViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(String title, String content);
-    List<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDesc(int buildingId);
+    Page<PostListViewEntity> findByTitleContainsOrContentContainsOrderByWriteDatetimeDesc(
+            String title, String content, Pageable pageable);
+    Page<PostListViewEntity> findByBuildingIdOrderByWriteDatetimeDesc(int buildingId, Pageable pageable);
     List<PostListViewEntity> findByUserIdOrderByWriteDatetimeDesc(int userId);
     
     @Query("SELECT p FROM postList p WHERE p.postId IN :ids")
