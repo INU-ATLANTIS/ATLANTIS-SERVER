@@ -2,9 +2,9 @@ package com.atl.map.service.implement;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -253,6 +253,7 @@ public class PostServiceImplement implements PostService {
         return GetMyPostResponseDto.success(postListViewEntities);
     }
 
+    @Transactional
     @Override
     public ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -263,23 +264,53 @@ public class PostServiceImplement implements PostService {
         if (commentEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
 
         PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
-        int deletedCommentsCount = deleteChildComments(commentId);
-        commentRepository.delete(commentEntity);
-        postEntity.decreaseCommentCount(deletedCommentsCount + 1);
+        List<CommentEntity> postComments = commentRepository.findByPostId(commentEntity.getPostId());
+        List<CommentEntity> commentsToDelete = collectCommentsToDelete(commentId, postComments);
+
+        commentRepository.deleteAllInBatch(commentsToDelete);
+        postEntity.decreaseCommentCount(commentsToDelete.size());
         postRepository.save(postEntity);
 
         return DeleteCommentResponseDto.success();
     }
 
-    private int deleteChildComments(Integer parentId) {
-        List<CommentEntity> childComments = commentRepository.findByParentId(parentId);
-        int deleteCount = 0;
-        for (CommentEntity childComment : childComments) {
-            deleteCount += deleteChildComments(childComment.getCommentId());
-            commentRepository.delete(childComment);
-            deleteCount++;
+    private List<CommentEntity> collectCommentsToDelete(Integer rootCommentId, List<CommentEntity> postComments) {
+        Map<Integer, List<CommentEntity>> childrenByParentId = new HashMap<>();
+        CommentEntity rootComment = null;
+
+        for (CommentEntity postComment : postComments) {
+            if (postComment.getCommentId() == rootCommentId) {
+                rootComment = postComment;
+            }
+
+            Integer parentId = postComment.getParentId();
+            if (parentId != null) {
+                childrenByParentId
+                        .computeIfAbsent(parentId, key -> new ArrayList<>())
+                        .add(postComment);
+            }
         }
-        return deleteCount;
+
+        List<CommentEntity> commentsToDelete = new ArrayList<>();
+        if (rootComment != null) {
+            collectDescendants(rootComment, childrenByParentId, commentsToDelete);
+        }
+
+        return commentsToDelete;
+    }
+
+    private void collectDescendants(
+            CommentEntity currentComment,
+            Map<Integer, List<CommentEntity>> childrenByParentId,
+            List<CommentEntity> commentsToDelete
+    ) {
+        commentsToDelete.add(currentComment);
+
+        List<CommentEntity> childComments =
+                childrenByParentId.getOrDefault(currentComment.getCommentId(), List.of());
+        for (CommentEntity childComment : childComments) {
+            collectDescendants(childComment, childrenByParentId, commentsToDelete);
+        }
     }
 
     @Override
@@ -287,11 +318,8 @@ public class PostServiceImplement implements PostService {
         UserEntity userEntity = userRepository.findByEmail(email);
         if (userEntity == null) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 
-        List<FavoriteEntity> favorites = favoriteRepository.findByUserId(userEntity.getUserId());
-        List<Integer> postIds = favorites.stream()
-                .map(FavoriteEntity::getPostId)
-                .collect(Collectors.toList());
-        List<PostListViewEntity> postListViewEntities = postListViewRepository.findAllById(postIds);
+        List<PostListViewEntity> postListViewEntities =
+                postListViewRepository.findLikedPostsByUserId(userEntity.getUserId());
 
         return GetMyLikePostResponseDto.success(postListViewEntities);
     }

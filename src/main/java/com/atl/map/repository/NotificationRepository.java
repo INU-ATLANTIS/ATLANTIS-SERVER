@@ -11,6 +11,7 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
     
     NotificationEntity findByNotiId(int notiId);
     void deleteByMarkerId(Integer markerId);
+    void deleteByMarkerIdIn(List<Integer> markerIds);
     List<NotificationEntity> findAllByUserId(int userId);
     void deleteByUserId(int userId);
 }
