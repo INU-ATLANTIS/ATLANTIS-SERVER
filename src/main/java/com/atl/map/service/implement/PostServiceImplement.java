@@ -24,7 +24,6 @@ import com.atl.map.entity.UserEntity;
 import com.atl.map.repository.CommentRepository;
 import com.atl.map.repository.FavoriteRepository;
 import com.atl.map.repository.ImageRepository;
-import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.PostListViewRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
