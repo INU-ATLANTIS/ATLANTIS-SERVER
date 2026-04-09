@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +20,9 @@ public interface MarkerRepository extends JpaRepository<MarkerEntity, Integer>{
     List<MarkerEntity> findByUserId(int userId);
     @Query("SELECT m.markerId FROM marker m WHERE m.postId = :postId")
     List<Integer> findMarkerIdsByPostId(Integer postId);
-    void deleteByPostId(Integer postId);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from marker m where m.postId = :postId")
+    void deleteAllByPostId(Integer postId);
     List<MarkerEntity> findByPostId(Integer postId);
 
 }

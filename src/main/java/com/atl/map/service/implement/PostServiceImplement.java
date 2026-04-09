@@ -173,7 +173,7 @@ public class PostServiceImplement implements PostService {
 
         imageRepository.deleteByPostId(postId);
         commentRepository.deleteByPostId(postId);
-        favoriteRepository.deleteByPostId(postId);
+        favoriteRepository.deleteAllByPostId(postId);
         markerService.deleteMarkersAndNotificationsByPostId(postId);
         postRepository.delete(postEntity);
 

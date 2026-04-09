@@ -148,8 +148,8 @@ public class MarkerServiceImplement implements MarkerService {
     public void deleteMarkersAndNotificationsByPostId(Integer postId) {
         List<Integer> markerIds = markerRepository.findMarkerIdsByPostId(postId);
         if (!markerIds.isEmpty()) {
-            notificationRepository.deleteByMarkerIdIn(markerIds);
+            notificationRepository.deleteAllByMarkerIds(markerIds);
         }
-        markerRepository.deleteByPostId(postId);
+        markerRepository.deleteAllByPostId(postId);
     }
 }
