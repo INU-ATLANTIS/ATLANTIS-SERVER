@@ -26,7 +26,7 @@
 | Framework | Spring Boot 3.2.2 |
 | Security | Spring Security + JWT |
 | ORM | Spring Data JPA (Hibernate) |
-| Database | AWS RDS (MySQL 8.0) |
+| Database | AWS RDS (MySQL 8.0), Redis |
 | Cloud | AWS EC2 (Ubuntu 22.04 LTS) |
 | API Docs | Swagger (SpringDoc OpenAPI 3) |
 | Build Tool | Gradle |
@@ -93,11 +93,15 @@ src/main/java/com/atl/map/
     └── implement/   # 서비스 구현체
 ```
 
-<br>
-
 ## ⚙️ 로컬 실행 방법
 
 1. `src/main/resources/application.yml.example`을 복사해 `application.yml` 생성
-2. DB, JWT, Gmail, 파일 경로 등 환경변수 설정
-3. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui/index.html` 에서 API 확인
+2. DB, JWT, Gmail, 파일 경로 등 환경값을 채운다
+3. Redis 기능 확인이 필요하다면 로컬 Redis를 실행한다
+4. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui/index.html` 에서 API 확인
 
+### 성능 측정용 SQL
+
+- 페이징용 기본 시드: `src/main/resources/db/seed/01-pagination-perf-seed.sql`
+- 인덱스 튜닝용 추가 시드: `src/main/resources/db/seed/02-index-tuning-perf-seed.sql`
+- 인덱스 후보 SQL: `src/main/resources/db/index/01-index-tuning-candidates.sql`
