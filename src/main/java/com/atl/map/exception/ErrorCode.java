@@ -22,6 +22,7 @@ public enum ErrorCode {
     REPORTED_USER(HttpStatus.FORBIDDEN, "RU.", "This user is reported."),
 
     // 401 Unauthorized
+    AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "AR", "Authentication is required."),
     SIGN_IN_FAIL(HttpStatus.UNAUTHORIZED, "SF", "Login information mismatch."),
     CERTIFICATION_FAIL(HttpStatus.UNAUTHORIZED, "CF", "Certification failed."),
     MAIL_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "MF", "Mail send failed."),

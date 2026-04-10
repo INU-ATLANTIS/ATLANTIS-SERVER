@@ -17,6 +17,7 @@ public interface ResponseCode {
     String REPORTED_USER = "RU.";
 
     // HTTP Status 401
+    String AUTHENTICATION_REQUIRED = "AR";
     String SIGN_IN_FAIL = "SF";
     String CERTIFICATION_FAIL = "CF";
     String MAIL_FAIL = "MF";

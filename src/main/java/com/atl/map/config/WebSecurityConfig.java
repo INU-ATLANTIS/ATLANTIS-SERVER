@@ -5,18 +5,22 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.atl.map.exception.ErrorCode;
 import com.atl.map.filter.JwtAuthenticationFilter;
 
 import jakarta.servlet.ServletException;
@@ -42,13 +46,42 @@ public class WebSecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션을 STATELESS로 설정하여 세션을 사용하지 않게 합니다.
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/", "/api/v1/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/user/**").hasAuthority("ROLE_USER")
+                        .requestMatchers(
+                                "/",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/email-check",
+                                "/api/v1/auth/email-certification",
+                                "/api/v1/auth/check-certification",
+                                "/api/v1/auth/sign-up",
+                                "/api/v1/auth/sign-in",
+                                "/api/v1/auth/change-password"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/file/**",
+                                "/api/v1/post/latest-list",
+                                "/api/v1/post/top",
+                                "/api/v1/post/search-list/**",
+                                "/api/v1/post/building/**",
+                                "/api/v1/post/{postid:[0-9]+}",
+                                "/api/v1/post/*/comment-list",
+                                "/api/v1/post/*/child-comments",
+                                "/api/v1/marker/building/**",
+                                "/api/v1/marker/top",
+                                "/api/v1/marker/search-building/**",
+                                "/api/v1/marker/*/imagelist",
+                                "/api/v1/marker/{markerId:[0-9]+}",
+                                "/api/v1/user/*"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/**").hasAuthority("ROLE_USER")
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(new FailedAuthenticationEntryPoint())) // 인증 실패 시 처리할 엔트리 포인트를 설정합니다.
+                        .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
+                        .accessDeniedHandler(new FailedAccessDeniedHandler())) // 인증/인가 실패 응답을 분리합니다.
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 인증 필터를
                                                                                                        // UsernamePasswordAuthenticationFilter
                                                                                                        // 전에 추가합니다.
@@ -76,7 +109,26 @@ class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
         response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden 응답 코드를 설정합니다.
-        response.getWriter().write("{\"code\":\"NP\", \"message\": \"No Permission\"}"); // 에러 메시지를 JSON 형태로 응답합니다.
+        response.setStatus(ErrorCode.AUTHENTICATION_REQUIRED.getHttpStatus().value());
+        response.getWriter().write(String.format(
+                "{\"code\":\"%s\", \"message\": \"%s\"}",
+                ErrorCode.AUTHENTICATION_REQUIRED.getCode(),
+                ErrorCode.AUTHENTICATION_REQUIRED.getMessage()
+        ));
+    }
+}
+
+class FailedAccessDeniedHandler implements AccessDeniedHandler {
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+            AccessDeniedException accessDeniedException) throws IOException, ServletException {
+        response.setContentType("application/json");
+        response.setStatus(ErrorCode.NO_PERMISSION.getHttpStatus().value());
+        response.getWriter().write(String.format(
+                "{\"code\":\"%s\", \"message\": \"%s\"}",
+                ErrorCode.NO_PERMISSION.getCode(),
+                ErrorCode.NO_PERMISSION.getMessage()
+        ));
     }
 }
