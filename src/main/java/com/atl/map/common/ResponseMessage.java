@@ -17,6 +17,7 @@ public interface ResponseMessage {
     String REPORTED_USER = "This user is reported.";
 
     // HTTP Status 401
+    String AUTHENTICATION_REQUIRED = "Authentication is required.";
     String SIGN_IN_FAIL = "Login information mismatch.";    
     String CERTIFICATION_FAIL = "Certification failed.";
     String MAIL_FAIL = "Mail send failed.";
