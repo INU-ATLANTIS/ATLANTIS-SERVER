@@ -29,7 +29,6 @@ DELETE FROM marker;
 DELETE FROM notification;
 DELETE FROM post_list;
 DELETE FROM post;
-DELETE FROM certification;
 DELETE FROM report;
 DELETE FROM floorpic;
 DELETE FROM building;
