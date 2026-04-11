@@ -3,6 +3,7 @@ package com.atl.map.provider;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Async;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,15 @@ public class EmailProvider {
 
     private final String SUBJECT = "메일 인증 번호 입니다.";
 
-    public boolean sendCertificationMail(String email, String CertificationNumber) {
+    @Async("emailTaskExecutor")
+    public void sendCertificationMail(String email, String certificationNumber) {
 
         try {
 
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
 
-            String htmlContent = getCertificationMessage(CertificationNumber);
+            String htmlContent = getCertificationMessage(certificationNumber);
 
             messageHelper.setTo(email);
             messageHelper.setSubject(SUBJECT);
@@ -32,12 +34,10 @@ public class EmailProvider {
 
             javaMailSender.send(message);
 
+            log.info("인증 메일 발송 완료 - to: {}", email);
         } catch (Exception exception) {
             log.error("이메일 발송 실패 - to: {}", email, exception);
-            return false;
         }
-
-        return true;
 
     }
 
