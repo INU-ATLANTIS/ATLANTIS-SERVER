@@ -1,10 +1,11 @@
 package com.atl.map.service.implement;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,7 @@ import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
 import com.atl.map.repository.resultSet.GetCommentListResultSet;
 import com.atl.map.repository.resultSet.GetPostResultSet;
+import com.atl.map.service.CachedLookupService;
 import com.atl.map.service.MarkerService;
 import com.atl.map.service.PostService;
 
@@ -67,7 +69,11 @@ public class PostServiceImplement implements PostService {
     private final CommentRepository commentRepository;
     private final PostListViewRepository postListViewRepository;
     private final MarkerService markerService;
+    private final CachedLookupService cachedLookupService;
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true)
+    })
     @Transactional
     @Override
     public ResponseEntity<? super CreatePostResponseDto> createPost(CreatePostRequestDto dto, String email) {
@@ -99,6 +105,10 @@ public class PostServiceImplement implements PostService {
         return GetPostResponseDto.success(resultSet, imageEntities);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true),
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super PutFavoriteResponseDto> putFavorite(Integer postId, String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -120,6 +130,9 @@ public class PostServiceImplement implements PostService {
         return PutFavoriteResponseDto.success();
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super PostCommentResponseDto> postComment(PostCommentRequestDto dto, Integer postId, String email) {
         PostEntity postEntity = postRepository.findByPostId(postId);
@@ -137,6 +150,10 @@ public class PostServiceImplement implements PostService {
         return PostCommentResponseDto.success();
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true),
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Transactional
     @Override
     public ResponseEntity<? super PatchPostResponseDto> patchPost(PatchPostRequestDto dto, Integer postId, String email) {
@@ -163,6 +180,10 @@ public class PostServiceImplement implements PostService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true),
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Transactional
     public ResponseEntity<? super DeletePostResponseDto> deletePost(Integer postId, String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -190,9 +211,8 @@ public class PostServiceImplement implements PostService {
 
     @Override
     public ResponseEntity<? super GetTopPostListResponseDto> getTopPostList() {
-        LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
         List<PostListViewEntity> postListViewEntities =
-                postListViewRepository.findTop10ByWriteDatetimeGreaterThanOrderByLikeCountDescCommentCountDesc(beforeWeek);
+                cachedLookupService.getTopPosts(cachedLookupService.getCurrentFiveMinuteBucketKey());
         return GetTopPostListResponseDto.success(postListViewEntities);
     }
 
@@ -227,6 +247,9 @@ public class PostServiceImplement implements PostService {
         return GetChildCommentListResponseDto.success(resultSets);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super PostChildCommentResponseDto> postChildComment(PostChildCommentRequestDto dto, String email, Integer postId, Integer commentId) {
         PostEntity postEntity = postRepository.findByPostId(postId);
@@ -255,6 +278,9 @@ public class PostServiceImplement implements PostService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topPosts", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super DeleteCommentResponseDto> deleteComment(String email, Integer commentId) {
         UserEntity userEntity = userRepository.findByEmail(email);

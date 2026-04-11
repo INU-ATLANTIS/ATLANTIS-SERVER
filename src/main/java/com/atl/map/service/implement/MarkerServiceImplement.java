@@ -1,8 +1,9 @@
 package com.atl.map.service.implement;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ import com.atl.map.repository.MarkerRepository;
 import com.atl.map.repository.NotificationRepository;
 import com.atl.map.repository.PostRepository;
 import com.atl.map.repository.UserRepository;
+import com.atl.map.service.CachedLookupService;
 import com.atl.map.service.MarkerService;
 
 import jakarta.transaction.Transactional;
@@ -48,6 +50,7 @@ public class MarkerServiceImplement implements MarkerService {
     private final BuildingRepository buildingRepository;
     private final FloorpicRepository floorpicRepository;
     private final NotificationRepository notificationRepository;
+    private final CachedLookupService cachedLookupService;
 
     @Override
     public ResponseEntity<? super GetBuildingResponseDto> getBuilding(Integer buildingId) {
@@ -58,10 +61,13 @@ public class MarkerServiceImplement implements MarkerService {
 
     @Override
     public ResponseEntity<? super GetBuildingListResponseDto> getBuildingList() {
-        List<BuildingEntity> buildingEntities = buildingRepository.getBuildingList();
+        List<BuildingEntity> buildingEntities = cachedLookupService.getBuildingList();
         return GetBuildingListResponseDto.success(buildingEntities);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super CreateMarkerResponseDto> createMarker(String email, CreateMarkerRequestDto dto) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -83,6 +89,9 @@ public class MarkerServiceImplement implements MarkerService {
         return GetMarkerResponseDto.success(markerEntity);
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super PatchMarekrResponseDto> patchMarker(PatchMarkerRequestDto dto, String email, Integer markerId) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -98,6 +107,9 @@ public class MarkerServiceImplement implements MarkerService {
         return PatchMarekrResponseDto.success();
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     @Override
     public ResponseEntity<? super DeleteMarkerResponseDto> deleteMarker(Integer markerId, String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -114,8 +126,8 @@ public class MarkerServiceImplement implements MarkerService {
 
     @Override
     public ResponseEntity<? super GetTopMarkerResponseDto> getTopMarker() {
-        LocalDateTime beforeWeek = LocalDateTime.now().minusWeeks(1);
-        List<MarkerEntity> list = markerRepository.findMarkersByLikesSinceDate(beforeWeek);
+        List<MarkerEntity> list =
+                cachedLookupService.getTopMarkers(cachedLookupService.getCurrentFiveMinuteBucketKey());
         return GetTopMarkerResponseDto.success(list);
     }
 
@@ -145,6 +157,9 @@ public class MarkerServiceImplement implements MarkerService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "topMarkers", allEntries = true)
+    })
     public void deleteMarkersAndNotificationsByPostId(Integer postId) {
         List<Integer> markerIds = markerRepository.findMarkerIdsByPostId(postId);
         if (!markerIds.isEmpty()) {
