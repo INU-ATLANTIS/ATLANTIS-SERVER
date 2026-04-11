@@ -1,8 +1,12 @@
 package com.atl.map.config;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,6 +39,8 @@ import lombok.RequiredArgsConstructor;
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter; // JWT 인증 필터를 주입받습니다.
+    @Value("${app.security.cors.allowed-origin-patterns}")
+    private String allowedOriginPatterns;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
@@ -91,10 +97,16 @@ public class WebSecurityConfig {
 
     @Bean
     protected CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration corsConfiguration = new CorsConfiguration().applyPermitDefaultValues();
-        corsConfiguration.addAllowedOrigin("*"); // 모든 도메인에서의 요청을 허용합니다.
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        List<String> originPatterns = Arrays.stream(allowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(pattern -> !pattern.isEmpty())
+                .toList();
+
+        corsConfiguration.setAllowedOriginPatterns(originPatterns);
         corsConfiguration.addAllowedMethod("*"); // 모든 HTTP 메소드를 허용합니다.
         corsConfiguration.addAllowedHeader("*"); // 모든 헤더를 허용합니다.
+        corsConfiguration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/v1/**", corsConfiguration); // 모든 경로에 대해 CORS 설정을 적용합니다.

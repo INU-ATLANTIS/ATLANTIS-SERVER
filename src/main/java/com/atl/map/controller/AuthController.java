@@ -1,5 +1,6 @@
 package com.atl.map.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -8,10 +9,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.atl.map.config.EmailCertificationRateLimiter;
+import com.atl.map.dto.response.ResponseDto;
 import com.atl.map.dto.response.auth.*;
 import com.atl.map.dto.request.auth.*;
+import com.atl.map.exception.ErrorCode;
 import com.atl.map.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailCertificationRateLimiter emailCertificationRateLimiter;
 
     @PostMapping("/email-check")
     public ResponseEntity<? super EmailCheckResponseDto> emailCheck(
@@ -32,8 +38,16 @@ public class AuthController {
 
     @PostMapping("/email-certification")
     public ResponseEntity<? super EmailCertificationResponseDto> emailCertification(
-        @RequestBody @Valid EmailCertificationRequestDto requestBody
+        @RequestBody @Valid EmailCertificationRequestDto requestBody,
+        HttpServletRequest request
     ){
+        if (!emailCertificationRateLimiter.isAllowed(request)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(new ResponseDto(
+                            ErrorCode.TOO_MANY_REQUESTS.getCode(),
+                            ErrorCode.TOO_MANY_REQUESTS.getMessage()));
+        }
+
         ResponseEntity<? super EmailCertificationResponseDto> response = authService.emailCertificaion(requestBody);
         return response;
     }

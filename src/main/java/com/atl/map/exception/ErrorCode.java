@@ -30,6 +30,9 @@ public enum ErrorCode {
     // 403 Forbidden
     NO_PERMISSION(HttpStatus.FORBIDDEN, "NF", "Do not have Permission."),
 
+    // 429 Too Many Requests
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "TMR", "Too many requests."),
+
     // 500 Internal Server Error
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DBE", "Database error.");
 
