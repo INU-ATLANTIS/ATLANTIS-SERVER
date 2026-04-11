@@ -137,6 +137,7 @@ public class PostServiceImplement implements PostService {
         return PostCommentResponseDto.success();
     }
 
+    @Transactional
     @Override
     public ResponseEntity<? super PatchPostResponseDto> patchPost(PatchPostRequestDto dto, Integer postId, String email) {
         PostEntity postEntity = postRepository.findByPostId(postId);
@@ -150,7 +151,7 @@ public class PostServiceImplement implements PostService {
         postRepository.save(postEntity);
 
         if (dto.getImageList() != null) {
-            imageRepository.deleteById(postId);
+            imageRepository.deleteByPostId(postId);
             List<ImageEntity> imageEntities = new ArrayList<>();
             for (String image : dto.getImageList()) {
                 imageEntities.add(new ImageEntity(postId, image));
