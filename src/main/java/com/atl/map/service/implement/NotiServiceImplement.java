@@ -67,6 +67,9 @@ public class NotiServiceImplement implements NotiService {
         NotificationEntity notificationEntity = notificationRepository.findByNotiId(notiId);
         if (notificationEntity == null) throw new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND);
         if (notificationEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
+        if (dto.getMarkerId() != null && !markerRepository.existsById(dto.getMarkerId())) {
+            throw new BusinessException(ErrorCode.MARKER_NOT_FOUND);
+        }
 
         notificationEntity.patchNotification(dto);
         notificationRepository.save(notificationEntity);
