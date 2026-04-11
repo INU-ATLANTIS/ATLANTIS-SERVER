@@ -3,6 +3,7 @@ package com.atl.map.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,8 +16,10 @@ public interface MarkerRepository extends JpaRepository<MarkerEntity, Integer>{
     
     void deleteByUserId(Integer userId);
     MarkerEntity findByMarkerId(Integer markerId);
-    @Query(value = "SELECT m FROM marker m JOIN post p ON m.postId = p.postId WHERE COALESCE(p.updateDate, p.createDate) > :sinceDate ORDER BY p.likeCount DESC")
-    List<MarkerEntity> findMarkersByLikesSinceDate(LocalDateTime sinceDate);
+    @Query(value = "SELECT m FROM marker m JOIN post p ON m.postId = p.postId " +
+            "WHERE COALESCE(p.updateDate, p.createDate) > :sinceDate " +
+            "ORDER BY p.likeCount DESC, p.commentCount DESC, COALESCE(p.updateDate, p.createDate) DESC, m.markerId DESC")
+    List<MarkerEntity> findMarkersByLikesSinceDate(LocalDateTime sinceDate, Pageable pageable);
     List<MarkerEntity> findByUserId(int userId);
     @Query("SELECT m.markerId FROM marker m WHERE m.postId = :postId")
     List<Integer> findMarkerIdsByPostId(Integer postId);
