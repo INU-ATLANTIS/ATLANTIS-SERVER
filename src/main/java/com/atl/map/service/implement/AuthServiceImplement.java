@@ -53,12 +53,9 @@ public class AuthServiceImplement implements AuthService {
         String email = dto.getEmail();
         String certificationNumber = CertificationNumber.getCertificationNumber();
 
-        if (!emailProvider.sendCertificationMail(email, certificationNumber)) {
-            throw new BusinessException(ErrorCode.MAIL_FAIL);
-        }
-
         stringRedisTemplate.opsForValue()
                 .set(getCertificationKey(email), certificationNumber, CERTIFICATION_TTL);
+        emailProvider.sendCertificationMail(email, certificationNumber);
 
         return EmailCertificationResponseDto.success();
     }
