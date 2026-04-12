@@ -1,48 +1,58 @@
 package com.atl.map.config;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class EmailCertificationRateLimiter {
 
+    private static final String RATE_LIMIT_KEY_PREFIX = "rate-limit:email-certification:";
+
     private final int maxRequests;
     private final Duration window;
-    private final Map<String, Deque<Instant>> requestsByClient = new ConcurrentHashMap<>();
+    private final StringRedisTemplate stringRedisTemplate;
 
     public EmailCertificationRateLimiter(
+            StringRedisTemplate stringRedisTemplate,
             @Value("${app.security.rate-limit.email-certification.max-requests}") int maxRequests,
             @Value("${app.security.rate-limit.email-certification.window-seconds}") long windowSeconds
     ) {
+        this.stringRedisTemplate = stringRedisTemplate;
         this.maxRequests = maxRequests;
         this.window = Duration.ofSeconds(windowSeconds);
     }
 
     public boolean isAllowed(HttpServletRequest request) {
         String clientKey = extractClientKey(request);
-        Instant now = Instant.now();
-        Deque<Instant> requestTimes = requestsByClient.computeIfAbsent(clientKey, key -> new ArrayDeque<>());
+        String rateLimitKey = RATE_LIMIT_KEY_PREFIX + clientKey;
 
-        synchronized (requestTimes) {
-            Instant threshold = now.minus(window);
-            while (!requestTimes.isEmpty() && requestTimes.peekFirst().isBefore(threshold)) {
-                requestTimes.pollFirst();
-            }
+        try {
+            Long requestCount = stringRedisTemplate.opsForValue().increment(rateLimitKey);
 
-            if (requestTimes.size() >= maxRequests) {
+            if (requestCount == null) {
+                log.warn("Rate limit 증가 실패 - clientKey: {}", clientKey);
                 return false;
             }
 
-            requestTimes.addLast(now);
+            if (requestCount == 1L) {
+                stringRedisTemplate.expire(rateLimitKey, window);
+            }
+
+            if (requestCount > maxRequests) {
+                log.warn("이메일 인증 요청 제한 초과 - clientKey: {}, count: {}", clientKey, requestCount);
+                return false;
+            }
+
+            return true;
+        } catch (Exception exception) {
+            log.error("Rate limit 확인 실패 - clientKey: {}", clientKey, exception);
             return true;
         }
     }
