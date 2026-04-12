@@ -1,9 +1,11 @@
 package com.atl.map.config;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailCertificationRateLimiter {
 
     private static final String RATE_LIMIT_KEY_PREFIX = "rate-limit:email-certification:";
+    private static final DefaultRedisScript<Long> INCREMENT_WITH_TTL_SCRIPT = createIncrementWithTtlScript();
 
     private final int maxRequests;
     private final Duration window;
@@ -34,15 +37,15 @@ public class EmailCertificationRateLimiter {
         String rateLimitKey = RATE_LIMIT_KEY_PREFIX + clientKey;
 
         try {
-            Long requestCount = stringRedisTemplate.opsForValue().increment(rateLimitKey);
+            Long requestCount = stringRedisTemplate.execute(
+                    INCREMENT_WITH_TTL_SCRIPT,
+                    List.of(rateLimitKey),
+                    String.valueOf(window.toMillis())
+            );
 
             if (requestCount == null) {
                 log.warn("Rate limit 증가 실패 - clientKey: {}", clientKey);
                 return false;
-            }
-
-            if (requestCount == 1L) {
-                stringRedisTemplate.expire(rateLimitKey, window);
             }
 
             if (requestCount > maxRequests) {
@@ -69,5 +72,19 @@ public class EmailCertificationRateLimiter {
         }
 
         return request.getRemoteAddr();
+    }
+
+    private static DefaultRedisScript<Long> createIncrementWithTtlScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setScriptText("""
+                local current = redis.call('INCR', KEYS[1])
+                local ttl = redis.call('PTTL', KEYS[1])
+                if ttl < 0 then
+                    redis.call('PEXPIRE', KEYS[1], ARGV[1])
+                end
+                return current
+                """);
+        script.setResultType(Long.class);
+        return script;
     }
 }
