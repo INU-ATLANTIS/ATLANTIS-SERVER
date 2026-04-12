@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "ATLANTIS Dashboards"
+    orgId: 1
+    folder: "ATLANTIS"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter; // JWT 인증 필터를 주입받습니다.
+    private final Environment environment;
     @Value("${app.security.cors.allowed-origin-patterns}")
     private String allowedOriginPatterns;
 
@@ -51,41 +53,51 @@ public class WebSecurityConfig {
                 .httpBasic(HttpBasicConfigurer::disable) // 기본 HTTP 인증을 비활성화합니다.
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션을 STATELESS로 설정하여 세션을 사용하지 않게 합니다.
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers(
-                                "/",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/v1/auth/email-check",
-                                "/api/v1/auth/email-certification",
-                                "/api/v1/auth/check-certification",
-                                "/api/v1/auth/sign-up",
-                                "/api/v1/auth/sign-in",
-                                "/api/v1/auth/reissue",
-                                "/api/v1/auth/change-password"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/v1/file/**",
-                                "/api/v1/post/latest-list",
-                                "/api/v1/post/top",
-                                "/api/v1/post/search-list/**",
-                                "/api/v1/post/building/**",
-                                "/api/v1/post/{postid:[0-9]+}",
-                                "/api/v1/post/*/comment-list",
-                                "/api/v1/post/*/child-comments",
-                                "/api/v1/marker/building/**",
-                                "/api/v1/marker/top",
-                                "/api/v1/marker/search-building/**",
-                                "/api/v1/marker/*/imagelist",
-                                "/api/v1/marker/{markerId:[0-9]+}",
-                                "/api/v1/user/*"
-                        ).permitAll()
-                        .requestMatchers("/api/v1/**").hasAuthority("ROLE_USER")
-                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(request -> {
+                    request.requestMatchers(
+                            "/",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**",
+                            "/swagger-ui.html"
+                    ).permitAll();
+
+                    if (environment.matchesProfiles("dev")) {
+                        request.requestMatchers("/actuator/**").permitAll();
+                    }
+
+                    if (environment.matchesProfiles("docker")) {
+                        request.requestMatchers("/actuator/health", "/actuator/prometheus").permitAll();
+                    }
+
+                    request.requestMatchers(
+                            "/api/v1/auth/email-check",
+                            "/api/v1/auth/email-certification",
+                            "/api/v1/auth/check-certification",
+                            "/api/v1/auth/sign-up",
+                            "/api/v1/auth/sign-in",
+                            "/api/v1/auth/reissue",
+                            "/api/v1/auth/change-password"
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.GET,
+                            "/api/v1/file/**",
+                            "/api/v1/post/latest-list",
+                            "/api/v1/post/top",
+                            "/api/v1/post/search-list/**",
+                            "/api/v1/post/building/**",
+                            "/api/v1/post/{postid:[0-9]+}",
+                            "/api/v1/post/*/comment-list",
+                            "/api/v1/post/*/child-comments",
+                            "/api/v1/marker/building/**",
+                            "/api/v1/marker/top",
+                            "/api/v1/marker/search-building/**",
+                            "/api/v1/marker/*/imagelist",
+                            "/api/v1/marker/{markerId:[0-9]+}",
+                            "/api/v1/user/*"
+                    ).permitAll()
+                    .requestMatchers("/api/v1/**").hasAuthority("ROLE_USER")
+                    .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                    .anyRequest().authenticated();
+                })
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
                         .accessDeniedHandler(new FailedAccessDeniedHandler())) // 인증/인가 실패 응답을 분리합니다.

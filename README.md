@@ -28,6 +28,7 @@
 | Cloud | AWS EC2 (Ubuntu 22.04 LTS) |
 | API Docs | Swagger (SpringDoc OpenAPI 3) |
 | Test | JUnit 5, Mockito, Spring Security Test |
+| Monitoring | Spring Boot Actuator, Prometheus, Grafana |
 | Build Tool | Gradle |
 
 <br>
@@ -245,6 +246,13 @@ flowchart TD
 - `Redis`: 인증번호 TTL 저장, refresh token 저장, rate limit, 조회 캐시에 활용
 - `Global Exception Handler`: `BusinessException`을 표준 응답 형식으로 변환
 
+## 📈 모니터링
+
+- `Spring Boot Actuator`로 `health`, `info`, `metrics`, `prometheus` 엔드포인트를 노출합니다.
+- `Prometheus`가 애플리케이션 메트릭을 수집할 수 있도록 `docker-compose`에 연동했습니다.
+- `Grafana`를 함께 구성해 Prometheus datasource와 기본 대시보드가 자동으로 로드되도록 했습니다.
+- JVM, HTTP, 프로세스, 시스템 메트릭, HikariCP, 캐시, 보안 필터 메트릭과 애플리케이션 health 상태를 기본적으로 확인할 수 있습니다.
+
 ## ⚙️ 로컬 실행 방법
 
 1. `src/main/resources/application.yml.example`을 복사해 `application.yml` 생성
@@ -260,10 +268,11 @@ flowchart TD
 - `app.security.rate-limit.email-certification.*`: 이메일 인증 요청 제한 설정
 - `app.security.cors.allowed-origin-patterns`: 허용할 프론트 origin 패턴
 - `file.path`, `file.url`: 업로드 파일 저장 경로와 접근 URL
+- `management.endpoints.web.exposure.include`: 모니터링 엔드포인트 노출 범위
 
 ## 🐳 Docker 실행 방법
 
-`docker-compose.yml` 기준으로 앱과 Redis를 컨테이너로 실행하고, DB는 기존 RDS에 연결할 수 있습니다.
+`docker-compose.yml` 기준으로 앱, Redis, Prometheus, Grafana를 컨테이너로 실행하고, DB는 기존 RDS에 연결할 수 있습니다. Docker 실행은 로컬 `application.yml`이 아니라 `application-docker.yml`과 환경변수를 사용합니다.
 
 1. `docker-compose.yml`의 아래 환경값을 실제 값으로 수정
    - `DB_HOST`
@@ -273,17 +282,26 @@ flowchart TD
    - `SPRING_MAIL_USERNAME`
    - `SPRING_MAIL_PASSWORD`
    - 필요 시 `CORS_ALLOWED_ORIGINS`
-2. 아래 명령으로 빌드 및 실행
+2. 앱 컨테이너는 `docker` 프로필로 실행되며, `application-docker.yml`에서 datasource / Redis / mail / monitoring 설정을 읽습니다.
+3. 아래 명령으로 빌드 및 실행
 
 ```bash
 docker compose up --build
 ```
 
-3. 실행 후 확인
+4. 실행 후 확인
    - API: `http://localhost:8080`
-   - Swagger: `dev` 프로필에서만 `http://localhost:8080/swagger-ui.html`
+   - Swagger: Docker의 `docker` 프로필에서는 비활성화
+   - Actuator Health: `http://localhost:8080/actuator/health`
+   - Prometheus Metrics: `http://localhost:8080/actuator/prometheus`
+   - Prometheus UI: `http://localhost:9090`
+   - Grafana UI: `http://localhost:3001` (`admin` / `admin`)
 
-즉, Docker에서는 애플리케이션과 Redis를 띄우고, MySQL은 기존 RDS를 그대로 사용하는 방식입니다.
+참고:
+- Docker에서는 Prometheus 수집을 위해 `/actuator/health`, `/actuator/prometheus`만 공개합니다.
+- 나머지 Actuator 엔드포인트는 인증 없이 열지 않습니다.
+
+즉, Docker에서는 애플리케이션, Redis, Prometheus, Grafana를 띄우고, MySQL은 기존 RDS를 그대로 사용하는 방식입니다.
 
 중지:
 

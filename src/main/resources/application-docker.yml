@@ -1,0 +1,89 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  cache:
+    type: redis
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:3306/atlantis?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 3000ms
+
+secret-key: ${SECRET_KEY}
+
+springdoc:
+  swagger-ui:
+    enabled: false
+    path: /swagger-ui.html
+  api-docs:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.atl.map: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: atlantis-server
+
+file:
+  path: ${FILE_UPLOAD_PATH}
+  url: ${FILE_ACCESS_URL}
+
+app:
+  security:
+    jwt:
+      access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS:3600}
+      refresh-token-expiration-seconds: ${JWT_REFRESH_TOKEN_EXPIRATION_SECONDS:604800}
+    rate-limit:
+      email-certification:
+        max-requests: ${EMAIL_CERTIFICATION_RATE_LIMIT_MAX_REQUESTS:5}
+        window-seconds: ${EMAIL_CERTIFICATION_RATE_LIMIT_WINDOW_SECONDS:60}
+    cors:
+      allowed-origin-patterns: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
