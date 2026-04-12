@@ -1,6 +1,4 @@
-# ATLANTIS-SERVER
-
-![Frame 31](https://github.com/DO-SOPT-ANDROID/chaeeun-park/assets/107169027/fcab55b8-272f-4a06-86a9-6163561e612f)
+# SERVER
 
 ## TEAM ATLANTIS 졸업작품 (2023.09 ~ 2024.05)
 
@@ -29,6 +27,7 @@
 | Database | AWS RDS (MySQL 8.0), Redis |
 | Cloud | AWS EC2 (Ubuntu 22.04 LTS) |
 | API Docs | Swagger (SpringDoc OpenAPI 3) |
+| Test | JUnit 5, Mockito, Spring Security Test |
 | Build Tool | Gradle |
 
 <br>
@@ -36,13 +35,16 @@
 ## ✨ 주요 기능
 
 ### 위치 기반 알림 (지오펜싱)
-설정한 위치에 근접할 시 FCM 푸시 알림 발송
+설정한 위치에 근접할 시 알림 발송
 
 ### 게시글
 위치 설정 없이도 게시글 작성 가능, 댓글 및 대댓글 지원
 
 ### 추천 기능
 추천수 기반으로 인기 게시글 및 마커 노출
+
+### 인증 및 보안
+이메일 인증, JWT 기반 로그인, refresh token 재발급 지원
 
 ### 사용자 마커 생성
 특정 위치를 지정하고 게시글을 작성하면 지도 마커 생성
@@ -56,12 +58,12 @@
 
 | 도메인 | Base URL | 주요 기능 |
 | --- | --- | --- |
-| 인증 | `api/v1/auth` | 이메일 중복 확인, 이메일 인증, 회원가입, 로그인, 회원탈퇴, 비밀번호 변경 |
+| 인증 | `api/v1/auth` | 이메일 중복 확인, 이메일 인증, 회원가입, 로그인, 토큰 재발급, 회원탈퇴, 비밀번호 변경 |
 | 마커 | `api/v1/marker` | 마커 생성/조회/수정/삭제, 건물 검색, 인기 마커, 내 마커 |
 | 게시글 | `api/v1/post` | 게시글 CRUD, 댓글/대댓글, 좋아요, 검색 |
 | 사용자 | `api/v1/user` | 프로필 조회/수정, 닉네임 변경, 신고 |
 | 알림 | `api/v1/noti` | 알림 생성/조회/수정/삭제 |
-| 파일 | `api/v1/file` | 이미지 업로드 |
+| 파일 | `api/v1/file` | 이미지 업로드, 이미지 조회 |
 
 <br>
 
@@ -73,32 +75,49 @@
 
 ## 🗂️ 프로젝트 구조
 
-```
-src/main/java/com/atl/map/
-├── common/          # 공통 유틸 (인증번호, 응답코드/메시지)
-├── config/          # Spring Security 설정
-├── controller/      # REST 컨트롤러 (Auth, Marker, Post, User, Noti, File)
-├── dto/
-│   ├── object/      # 공통 객체 DTO
-│   ├── request/     # 요청 DTO (auth, marker, post, user, noti)
-│   └── response/    # 응답 DTO (auth, marker, post, user, noti)
-├── entity/          # JPA 엔티티
-│   └── primaryKey/  # 복합 키
-├── filter/          # JWT 인증 필터
-├── handler/         # 전역 예외 처리
-├── provider/        # JWT, Email 프로바이더
-├── repository/      # JPA 레포지토리
-│   └── resultSet/   # 커스텀 쿼리 결과 인터페이스
-└── service/
-    └── implement/   # 서비스 구현체
+```text
+src/
+├── main/
+│   ├── java/com/atl/map/
+│   │   ├── common/          # 공통 유틸
+│   │   ├── config/          # Security, Async, Cache, Rate Limit 설정
+│   │   ├── controller/      # REST 컨트롤러 (Auth, Marker, Post, User, Noti, File)
+│   │   ├── dto/
+│   │   │   ├── object/      # 공통 객체 DTO
+│   │   │   ├── request/     # 요청 DTO
+│   │   │   └── response/    # 응답 DTO
+│   │   ├── entity/          # JPA 엔티티
+│   │   │   └── primaryKey/  # 복합 키
+│   │   ├── exception/       # ErrorCode, BusinessException
+│   │   ├── filter/          # JWT 인증 필터
+│   │   ├── handler/         # 전역 예외 처리
+│   │   ├── provider/        # JWT, Email 프로바이더
+│   │   ├── repository/      # JPA 레포지토리 및 ResultSet
+│   │   └── service/         # 서비스 인터페이스, 구현체, 캐시 조회 서비스
+│   └── resources/
+│       ├── application.yml.example
+│       └── db/
+│           ├── seed/        # 성능 측정용 시드 SQL
+│           └── index/       # 인덱스 후보 SQL
+└── test/
+    └── java/com/atl/map/    # 인증, 게시글, 보안 응답 테스트
 ```
 
 ## ⚙️ 로컬 실행 방법
 
 1. `src/main/resources/application.yml.example`을 복사해 `application.yml` 생성
-2. DB, JWT, Gmail, 파일 경로 등 환경값을 채운다
-3. Redis 기능 확인이 필요하다면 로컬 Redis를 실행한다
+2. DB, JWT, Gmail, Redis, 파일 경로 등 환경값을 채운다
+3. Redis 기능 사용을 위해 로컬 Redis를 실행한다
 4. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui/index.html` 에서 API 확인
+
+### 주요 환경값
+
+- `secret-key`: JWT 서명 키
+- `app.security.jwt.access-token-expiration-seconds`: access token 만료시간
+- `app.security.jwt.refresh-token-expiration-seconds`: refresh token 만료시간
+- `app.security.rate-limit.email-certification.*`: 이메일 인증 요청 제한 설정
+- `app.security.cors.allowed-origin-patterns`: 허용할 프론트 origin 패턴
+- `file.path`, `file.url`: 업로드 파일 저장 경로와 접근 URL
 
 ## 🐳 Docker 실행 방법
 
@@ -120,7 +139,7 @@ docker compose up --build
 
 3. 실행 후 확인
    - API: `http://localhost:8080`
-   - Swagger: `http://localhost:8080/swagger-ui/index.html`
+   - Swagger: `dev` 프로필에서만 `http://localhost:8080/swagger-ui/index.html`
 
 즉, Docker에서는 애플리케이션과 Redis를 띄우고, MySQL은 기존 RDS를 그대로 사용하는 방식입니다.
 
@@ -135,3 +154,18 @@ docker compose down
 - 페이징용 기본 시드: `src/main/resources/db/seed/01-pagination-perf-seed.sql`
 - 인덱스 튜닝용 추가 시드: `src/main/resources/db/seed/02-index-tuning-perf-seed.sql`
 - 인덱스 후보 SQL: `src/main/resources/db/index/01-index-tuning-candidates.sql`
+
+## ✅ 테스트
+
+현재 테스트는 인증과 게시글 핵심 흐름 중심으로 구성되어 있습니다.
+
+- `AuthControllerTest`: 로그인, 토큰 재발급, 이메일 인증 요청 제한 응답 검증
+- `AuthServiceImplementTest`: refresh token 저장/검증/교체 흐름 검증
+- `PostServiceImplementTest`: 댓글 삭제 시 자식 댓글 포함 삭제 및 카운터 감소 검증
+- `SecurityErrorResponseTest`: `401`, `403` 보안 에러 응답 계약 검증
+
+실행:
+
+```bash
+./gradlew test
+```
