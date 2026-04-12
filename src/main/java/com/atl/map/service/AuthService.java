@@ -12,6 +12,7 @@ public interface AuthService {
     ResponseEntity<? super CheckCertificationResponseDto> checkCertification(CheckCertificationRequestDto dto);
     ResponseEntity<? super SignUpResponseDto> signUp (SignUpRequestDto dto);
     ResponseEntity<? super SignInResponseDto> signIn (SignInRequestDto dto);
+    ResponseEntity<? super ReissueTokenResponseDto> reissue(ReissueTokenRequestDto dto);
     ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(String email);
     ResponseEntity<? super ChangePasswordResponseDto> changePassword(ChangePasswordRequestDto dto);
     

@@ -32,6 +32,7 @@ public class AuthServiceImplement implements AuthService {
 
     private static final Duration CERTIFICATION_TTL = Duration.ofMinutes(5);
     private static final String CERTIFICATION_KEY_PREFIX = "certification:";
+    private static final String REFRESH_TOKEN_KEY_PREFIX = "refresh-token:";
 
     private final UserRepository userRepository;
     private final EmailProvider emailProvider;
@@ -109,7 +110,50 @@ public class AuthServiceImplement implements AuthService {
             throw new BusinessException(ErrorCode.SIGN_IN_FAIL);
         }
 
-        return SignInResponseDto.success(jwtProvider.create(dto.getEmail()));
+        String email = dto.getEmail();
+        String accessToken = jwtProvider.createAccessToken(email);
+        String refreshToken = jwtProvider.createRefreshToken(email);
+
+        stringRedisTemplate.opsForValue().set(
+                getRefreshTokenKey(email),
+                refreshToken,
+                Duration.ofSeconds(jwtProvider.getRefreshTokenExpirationSeconds())
+        );
+
+        return SignInResponseDto.success(
+                accessToken,
+                jwtProvider.getAccessTokenExpirationSeconds(),
+                refreshToken,
+                jwtProvider.getRefreshTokenExpirationSeconds()
+        );
+    }
+
+    @Override
+    public ResponseEntity<? super ReissueTokenResponseDto> reissue(ReissueTokenRequestDto dto) {
+        String refreshToken = dto.getRefreshToken();
+        String email = jwtProvider.validateRefreshToken(refreshToken);
+        if (email == null) throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        if (!userRepository.existsByEmail(email)) throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+
+        String savedRefreshToken = stringRedisTemplate.opsForValue().get(getRefreshTokenKey(email));
+        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String newAccessToken = jwtProvider.createAccessToken(email);
+        String newRefreshToken = jwtProvider.createRefreshToken(email);
+        stringRedisTemplate.opsForValue().set(
+                getRefreshTokenKey(email),
+                newRefreshToken,
+                Duration.ofSeconds(jwtProvider.getRefreshTokenExpirationSeconds())
+        );
+
+        return ReissueTokenResponseDto.success(
+                newAccessToken,
+                jwtProvider.getAccessTokenExpirationSeconds(),
+                newRefreshToken,
+                jwtProvider.getRefreshTokenExpirationSeconds()
+        );
     }
 
     @Transactional
@@ -122,6 +166,7 @@ public class AuthServiceImplement implements AuthService {
         favoriteRepository.deleteByUserId(userEntity.getUserId());
         userEntity.deletedUser();
         userRepository.save(userEntity);
+        stringRedisTemplate.delete(getRefreshTokenKey(email));
 
         return DeleteAccountResponseDto.success();
     }
@@ -143,11 +188,16 @@ public class AuthServiceImplement implements AuthService {
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userRepository.save(userEntity);
         stringRedisTemplate.delete(getCertificationKey(email));
+        stringRedisTemplate.delete(getRefreshTokenKey(email));
 
         return ChangePasswordResponseDto.success();
     }
 
     private String getCertificationKey(String email) {
         return CERTIFICATION_KEY_PREFIX + email;
+    }
+
+    private String getRefreshTokenKey(String email) {
+        return REFRESH_TOKEN_KEY_PREFIX + email;
     }
 }
