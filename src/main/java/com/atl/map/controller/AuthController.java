@@ -76,6 +76,14 @@ public class AuthController {
         return response;
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<? super ReissueTokenResponseDto> reissue(
+        @RequestBody @Valid ReissueTokenRequestDto requestBody
+    ) {
+        ResponseEntity<? super ReissueTokenResponseDto> response = authService.reissue(requestBody);
+        return response;
+    }
+
     @DeleteMapping("/delete-account")
     public ResponseEntity<? super DeleteAccountResponseDto> deleteAccount(
         @AuthenticationPrincipal String email) {

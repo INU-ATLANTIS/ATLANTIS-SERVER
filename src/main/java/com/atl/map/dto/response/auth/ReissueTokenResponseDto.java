@@ -8,14 +8,14 @@ import com.atl.map.dto.response.ResponseDto;
 import lombok.Getter;
 
 @Getter
-public class SignInResponseDto extends ResponseDto {
+public class ReissueTokenResponseDto extends ResponseDto {
 
     private final String token;
     private final int expirationTime;
     private final String refreshToken;
     private final int refreshExpirationTime;
 
-    private SignInResponseDto(
+    private ReissueTokenResponseDto(
             String token,
             long expirationTime,
             String refreshToken,
@@ -28,13 +28,13 @@ public class SignInResponseDto extends ResponseDto {
         this.refreshExpirationTime = Math.toIntExact(refreshExpirationTime);
     }
 
-    public static ResponseEntity<SignInResponseDto> success(
+    public static ResponseEntity<ReissueTokenResponseDto> success(
             String token,
             long expirationTime,
             String refreshToken,
             long refreshExpirationTime
     ) {
-        SignInResponseDto responseBody = new SignInResponseDto(
+        ReissueTokenResponseDto responseBody = new ReissueTokenResponseDto(
                 token,
                 expirationTime,
                 refreshToken,

@@ -49,6 +49,9 @@ logging:
 
 app:
   security:
+    jwt:
+      access-token-expiration-seconds: 3600
+      refresh-token-expiration-seconds: 604800
     rate-limit:
       email-certification:
         max-requests: 5

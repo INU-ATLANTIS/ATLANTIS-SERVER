@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 토큰에서 사용자 이메일을 검증하고 추출한다.
-            String userEmail = jwtProvider.validate(token);
+            String userEmail = jwtProvider.validateAccessToken(token);
             // 검증 실패 시, 다음 필터로 요청을 넘긴다.
             if (userEmail == null) {
                 filterChain.doFilter(request, response);
