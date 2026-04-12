@@ -1,6 +1,6 @@
 # SERVER
 
-## TEAM ATLANTIS 졸업작품 (2023.09 ~ 2024.05)
+## TEAM ATLANTIS 졸업작품
 
 위치 기반 **맞춤형 알림**을 제공해요! 캠퍼스 내의 다양한 장소와 이벤트에 대한 **정보를 손쉽게 공유**해요
 
@@ -69,7 +69,120 @@
 
 ## 📦 ERD
 
-<img width="709" alt="ERD" src="https://github.com/INU-ATLANTIS/ATLANTIS-SERVER/assets/137266460/103edf67-23d1-4cb7-96fc-6f8b6e771242">
+```mermaid
+erDiagram
+    USER {
+        int userId PK
+        string email
+        string password
+        string nickname
+        string role
+        string profileImage
+        int reportedCount
+        datetime createDate
+        datetime updateDate
+    }
+
+    POST {
+        int postId PK
+        string title
+        string content
+        int likeCount
+        int commentCount
+        datetime createDate
+        datetime updateDate
+        int userId
+        int buildingId
+    }
+
+    COMMENT {
+        int commentId PK
+        int userId
+        int postId
+        int parentId
+        string content
+        int likeCount
+        datetime createDate
+        datetime updateDate
+    }
+
+    IMAGE {
+        int imageId PK
+        int postId
+        string image
+    }
+
+    FAVORITE {
+        int userId PK
+        int postId PK
+    }
+
+    MARKER {
+        int markerId PK
+        decimal x
+        decimal y
+        string name
+        string type
+        int userId
+        int postId
+    }
+
+    NOTIFICATION {
+        int notiId PK
+        int userId
+        int markerId
+        int type
+        string message
+        int radius
+        datetime dateTime
+        datetime createDate
+        datetime updateDate
+    }
+
+    BUILDING {
+        int buildingId PK
+        string name
+        decimal x
+        decimal y
+        string office
+        string phone
+        string url
+        string departments
+        string buildingCode
+    }
+
+    FLOORPIC {
+        int floorId PK
+        int floor
+        string src
+        int buildingId
+    }
+
+    REPORT {
+        long reportId PK
+        int reportUserId
+        int reportedUserId
+    }
+
+    USER ||--o{ POST : writes
+    USER ||--o{ COMMENT : writes
+    USER ||--o{ MARKER : creates
+    USER ||--o{ NOTIFICATION : owns
+    USER ||--o{ FAVORITE : likes
+    USER ||--o{ REPORT : reports
+    USER ||--o{ REPORT : is_reported
+
+    BUILDING ||--o{ POST : categorizes
+    BUILDING ||--o{ FLOORPIC : has
+
+    POST ||--o{ COMMENT : has
+    POST ||--o{ IMAGE : has
+    POST ||--o{ FAVORITE : liked_by
+    POST ||--o{ MARKER : linked_to
+
+    COMMENT ||--o{ COMMENT : replies_to
+    MARKER ||--o{ NOTIFICATION : triggers
+```
 
 <br>
 
@@ -103,12 +216,41 @@ src/
     └── java/com/atl/map/    # 인증, 게시글, 보안 응답 테스트
 ```
 
+## 🏗️ 백엔드 아키텍처
+
+```mermaid
+flowchart TD
+    Client[Mobile App / Swagger] --> Filter[Security Filter]
+    Filter --> Controller[Controller]
+    Controller --> Service[Service Layer]
+    Service --> Repository[Repository / JPA]
+    Repository --> MySQL[(AWS RDS MySQL)]
+
+    Service --> Redis[(Redis)]
+    Service --> Provider[Provider]
+    Provider --> Mail[Email Provider]
+    Provider --> Jwt[JWT Provider]
+    Filter --> Jwt
+
+    Controller --> Exception[Global Exception Handler]
+    Service --> Exception
+```
+
+### 계층 설명
+
+- `Controller`: 요청 검증, 인증 사용자 정보 추출, 응답 반환
+- `Service`: 비즈니스 로직 처리, 트랜잭션 관리, 캐시/토큰/요청 제한 제어
+- `Repository`: JPA 기반 DB 접근과 커스텀 조회/갱신 쿼리 수행
+- `Provider`: JWT 생성/검증, 이메일 발송 같은 외부 기능 캡슐화
+- `Redis`: 인증번호 TTL 저장, refresh token 저장, rate limit, 조회 캐시에 활용
+- `Global Exception Handler`: `BusinessException`을 표준 응답 형식으로 변환
+
 ## ⚙️ 로컬 실행 방법
 
 1. `src/main/resources/application.yml.example`을 복사해 `application.yml` 생성
 2. DB, JWT, Gmail, Redis, 파일 경로 등 환경값을 채운다
 3. Redis 기능 사용을 위해 로컬 Redis를 실행한다
-4. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui/index.html` 에서 API 확인
+4. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui.html` 에서 API 확인
 
 ### 주요 환경값
 
@@ -139,7 +281,7 @@ docker compose up --build
 
 3. 실행 후 확인
    - API: `http://localhost:8080`
-   - Swagger: `dev` 프로필에서만 `http://localhost:8080/swagger-ui/index.html`
+   - Swagger: `dev` 프로필에서만 `http://localhost:8080/swagger-ui.html`
 
 즉, Docker에서는 애플리케이션과 Redis를 띄우고, MySQL은 기존 RDS를 그대로 사용하는 방식입니다.
 
@@ -147,25 +289,4 @@ docker compose up --build
 
 ```bash
 docker compose down
-```
-
-### 성능 측정용 SQL
-
-- 페이징용 기본 시드: `src/main/resources/db/seed/01-pagination-perf-seed.sql`
-- 인덱스 튜닝용 추가 시드: `src/main/resources/db/seed/02-index-tuning-perf-seed.sql`
-- 인덱스 후보 SQL: `src/main/resources/db/index/01-index-tuning-candidates.sql`
-
-## ✅ 테스트
-
-현재 테스트는 인증과 게시글 핵심 흐름 중심으로 구성되어 있습니다.
-
-- `AuthControllerTest`: 로그인, 토큰 재발급, 이메일 인증 요청 제한 응답 검증
-- `AuthServiceImplementTest`: refresh token 저장/검증/교체 흐름 검증
-- `PostServiceImplementTest`: 댓글 삭제 시 자식 댓글 포함 삭제 및 카운터 감소 검증
-- `SecurityErrorResponseTest`: `401`, `403` 보안 에러 응답 계약 검증
-
-실행:
-
-```bash
-./gradlew test
 ```
