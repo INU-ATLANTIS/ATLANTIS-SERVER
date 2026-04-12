@@ -1,0 +1,14 @@
+.git
+.github
+.gradle
+.gradle-user-home
+build
+out
+.idea
+.vscode
+.claude
+uploads
+src/main/resources/application.yml
+problem-logs
+perf-guides
+*.log

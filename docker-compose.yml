@@ -1,0 +1,45 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: atlantis-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atlantis-app
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: YOUR_RDS_ENDPOINT
+      DB_USERNAME: YOUR_RDS_USERNAME
+      DB_PASSWORD: YOUR_RDS_PASSWORD
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SECRET_KEY: CHANGE_THIS_TO_A_REAL_SECRET_KEY_32CHARS_OR_MORE
+      SPRING_MAIL_USERNAME: YOUR_GMAIL@gmail.com
+      SPRING_MAIL_PASSWORD: YOUR_GMAIL_APP_PASSWORD
+      FILE_UPLOAD_PATH: /app/uploads/
+      FILE_ACCESS_URL: http://localhost:8080/api/v1/file/
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+    ports:
+      - "8080:8080"
+    volumes:
+      - app-uploads:/app/uploads
+
+volumes:
+  redis-data:
+  app-uploads:

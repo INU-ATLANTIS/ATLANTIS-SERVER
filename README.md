@@ -100,6 +100,36 @@ src/main/java/com/atl/map/
 3. Redis 기능 확인이 필요하다면 로컬 Redis를 실행한다
 4. 애플리케이션 실행 후 `http://localhost:8080/swagger-ui/index.html` 에서 API 확인
 
+## 🐳 Docker 실행 방법
+
+`docker-compose.yml` 기준으로 앱과 Redis를 컨테이너로 실행하고, DB는 기존 RDS에 연결할 수 있습니다.
+
+1. `docker-compose.yml`의 아래 환경값을 실제 값으로 수정
+   - `DB_HOST`
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+   - `SECRET_KEY`
+   - `SPRING_MAIL_USERNAME`
+   - `SPRING_MAIL_PASSWORD`
+   - 필요 시 `CORS_ALLOWED_ORIGINS`
+2. 아래 명령으로 빌드 및 실행
+
+```bash
+docker compose up --build
+```
+
+3. 실행 후 확인
+   - API: `http://localhost:8080`
+   - Swagger: `http://localhost:8080/swagger-ui/index.html`
+
+즉, Docker에서는 애플리케이션과 Redis를 띄우고, MySQL은 기존 RDS를 그대로 사용하는 방식입니다.
+
+중지:
+
+```bash
+docker compose down
+```
+
 ### 성능 측정용 SQL
 
 - 페이징용 기본 시드: `src/main/resources/db/seed/01-pagination-perf-seed.sql`
