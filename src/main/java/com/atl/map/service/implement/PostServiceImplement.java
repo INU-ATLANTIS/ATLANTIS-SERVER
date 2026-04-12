@@ -109,6 +109,7 @@ public class PostServiceImplement implements PostService {
             @CacheEvict(cacheNames = "topPosts", allEntries = true),
             @CacheEvict(cacheNames = "topMarkers", allEntries = true)
     })
+    @Transactional
     @Override
     public ResponseEntity<? super PutFavoriteResponseDto> putFavorite(Integer postId, String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
@@ -120,12 +121,11 @@ public class PostServiceImplement implements PostService {
         FavoriteEntity favoriteEntity = favoriteRepository.findByPostIdAndUserId(postId, userEntity.getUserId());
         if (favoriteEntity == null) {
             favoriteRepository.save(new FavoriteEntity(userEntity.getUserId(), postId));
-            postEntity.increaseLikeCount();
+            validateCounterUpdate(postRepository.increaseLikeCount(postId), "좋아요 수 증가", postId);
         } else {
             favoriteRepository.delete(favoriteEntity);
-            postEntity.decreaseLikeCount();
+            validateCounterUpdate(postRepository.decreaseLikeCount(postId), "좋아요 수 감소", postId);
         }
-        postRepository.save(postEntity);
 
         return PutFavoriteResponseDto.success();
     }
@@ -133,6 +133,7 @@ public class PostServiceImplement implements PostService {
     @Caching(evict = {
             @CacheEvict(cacheNames = "topPosts", allEntries = true)
     })
+    @Transactional
     @Override
     public ResponseEntity<? super PostCommentResponseDto> postComment(PostCommentRequestDto dto, Integer postId, String email) {
         PostEntity postEntity = postRepository.findByPostId(postId);
@@ -144,8 +145,7 @@ public class PostServiceImplement implements PostService {
 
         CommentEntity commentEntity = new CommentEntity(dto, postId, userEntity.getUserId());
         commentRepository.save(commentEntity);
-        postEntity.increaseCommentCount();
-        postRepository.save(postEntity);
+        validateCounterUpdate(postRepository.increaseCommentCount(postId), "댓글 수 증가", postId);
 
         return PostCommentResponseDto.success();
     }
@@ -250,6 +250,7 @@ public class PostServiceImplement implements PostService {
     @Caching(evict = {
             @CacheEvict(cacheNames = "topPosts", allEntries = true)
     })
+    @Transactional
     @Override
     public ResponseEntity<? super PostChildCommentResponseDto> postChildComment(PostChildCommentRequestDto dto, String email, Integer postId, Integer commentId) {
         PostEntity postEntity = postRepository.findByPostId(postId);
@@ -261,8 +262,7 @@ public class PostServiceImplement implements PostService {
 
         CommentEntity commentEntity = new CommentEntity(dto, postId, commentId, userEntity.getUserId());
         commentRepository.save(commentEntity);
-        postEntity.increaseCommentCount();
-        postRepository.save(postEntity);
+        validateCounterUpdate(postRepository.increaseCommentCount(postId), "댓글 수 증가", postId);
 
         return PostChildCommentResponseDto.success();
     }
@@ -290,13 +290,15 @@ public class PostServiceImplement implements PostService {
         if (commentEntity == null) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         if (commentEntity.getUserId() != userEntity.getUserId()) throw new BusinessException(ErrorCode.NO_PERMISSION);
 
-        PostEntity postEntity = postRepository.findByPostId(commentEntity.getPostId());
-        List<CommentEntity> postComments = commentRepository.findByPostId(commentEntity.getPostId());
+        Integer postId = commentEntity.getPostId();
+        List<CommentEntity> postComments = commentRepository.findByPostId(postId);
         List<CommentEntity> commentsToDelete = collectCommentsToDelete(commentId, postComments);
 
         commentRepository.deleteAllInBatch(commentsToDelete);
-        postEntity.decreaseCommentCount(commentsToDelete.size());
-        postRepository.save(postEntity);
+        validateCounterUpdate(
+                postRepository.decreaseCommentCount(postId, commentsToDelete.size()),
+                "댓글 수 감소",
+                postId);
 
         return DeleteCommentResponseDto.success();
     }
@@ -364,5 +366,12 @@ public class PostServiceImplement implements PostService {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
         return PageRequest.of(safePage, safeSize);
+    }
+
+    private void validateCounterUpdate(int updatedRowCount, String operation, Integer postId) {
+        if (updatedRowCount == 0) {
+            log.error("카운터 갱신 실패 - operation: {}, postId: {}", operation, postId);
+            throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        }
     }
 }
