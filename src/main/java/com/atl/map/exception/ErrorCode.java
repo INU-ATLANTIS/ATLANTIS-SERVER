@@ -19,22 +19,27 @@ public enum ErrorCode {
     BUILDING_NOT_FOUND(HttpStatus.BAD_REQUEST, "NB", "This building does not exist."),
     COMMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "NC", "This comment does not exist."),
     NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "NN", "This notification does not exist."),
-    REPORTED_USER(HttpStatus.FORBIDDEN, "RU.", "This user is reported."),
+    INVALID_FILE(HttpStatus.BAD_REQUEST, "IF", "Invalid file request."),
 
     // 401 Unauthorized
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "AR", "Authentication is required."),
     SIGN_IN_FAIL(HttpStatus.UNAUTHORIZED, "SF", "Login information mismatch."),
     CERTIFICATION_FAIL(HttpStatus.UNAUTHORIZED, "CF", "Certification failed."),
-    MAIL_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "MF", "Mail send failed."),
 
     // 403 Forbidden
     NO_PERMISSION(HttpStatus.FORBIDDEN, "NF", "Do not have Permission."),
+    REPORTED_USER(HttpStatus.FORBIDDEN, "RU.", "This user is reported."),
+
+    // 404 Not Found
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "FNF", "This file does not exist."),
 
     // 429 Too Many Requests
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "TMR", "Too many requests."),
 
     // 500 Internal Server Error
-    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DBE", "Database error.");
+    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DBE", "Database error."),
+    MAIL_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "MF", "Mail send failed."),
+    FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "FUF", "File upload failed.");
 
     private final HttpStatus httpStatus;
     private final String code;
