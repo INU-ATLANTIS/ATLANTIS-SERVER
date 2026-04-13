@@ -1,8 +1,6 @@
 # 프로젝트 개요
 
 **commINUty** — 인천대학교 캠퍼스 위치 기반 알림 및 커뮤니티 앱 서버
-- 팀: ATLANTIS (졸업작품, 2023.09 ~ 2024.05)
-- 레포: https://github.com/INU-ATLANTIS/ATLANTIS-SERVER
 
 ## 기술 스택
 
@@ -10,8 +8,10 @@
 - **Framework**: Spring Boot 3.2.2
 - **Security**: Spring Security + JWT (jjwt 0.11.2)
 - **ORM**: Spring Data JPA (Hibernate, MySQL)
-- **Cloud**: AWS EC2 / RDS (MySQL 8.0) / S3 / SQS
-- **Push**: Firebase Cloud Messaging (FCM)
+- **Cache**: Redis (Spring Data Redis + Spring Cache)
+- **Cloud**: AWS EC2 / RDS (MySQL 8.0)
+- **File**: 서버 로컬 디스크 저장 (`${file.path}` 경로)
+- **Monitoring**: Spring Actuator + Micrometer Prometheus
 - **API Docs**: Swagger (SpringDoc OpenAPI 3 `2.3.0`)
 - **Build**: Gradle
 
@@ -20,15 +20,16 @@
 ```
 com.atl.map
 ├── common/       # CertificationNumber, ResponseCode, ResponseMessage
-├── config/       # WebSecurityConfig
+├── config/       # WebSecurityConfig, AsyncConfig, RedisCacheConfig, EmailCertificationRateLimiter
 ├── controller/   # Auth, Marker, Post, User, Noti, File
 ├── dto/          # request / response / object
 ├── entity/       # JPA 엔티티 (primaryKey 포함)
+├── exception/    # BusinessException, ErrorCode
 ├── filter/       # JwtAuthenticationFilter
-├── handler/      # ValidationExceptionHandler
+├── handler/      # GlobalExceptionHandler
 ├── provider/     # JwtProvider, EmailProvider
 ├── repository/   # JPA 레포지토리 (resultSet 포함)
-└── service/      # 인터페이스 + implement/
+└── service/      # 인터페이스 + implement/ + CachedLookupService
 ```
 
 ## API 엔드포인트
