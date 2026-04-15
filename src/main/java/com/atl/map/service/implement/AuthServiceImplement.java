@@ -136,7 +136,11 @@ public class AuthServiceImplement implements AuthService {
         if (!userRepository.existsByEmail(email)) throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
 
         String savedRefreshToken = stringRedisTemplate.opsForValue().get(getRefreshTokenKey(email));
-        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+        if (savedRefreshToken == null) {
+            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+        if (!savedRefreshToken.equals(refreshToken)) {
+            stringRedisTemplate.delete(getRefreshTokenKey(email));
             throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
